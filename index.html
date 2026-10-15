@@ -100,7 +100,7 @@
       <li><strong>The model family</strong>: \(y = a + b\,x\), with \(a\) and \(b\) left open.</li>
       <li><strong>The fitted model</strong>: \(\hat y = -5.7 + 3.35\,x\), the one line the data chose.</li>
     </ul>
-    <p>The language model at the top of this page is exactly this kind of thing: a family of formulas with 44 open slots instead of two, and data that chose the 44 numbers. The fitted line has one more property worth noticing now. Its numbers <em>mean</em> something you can say in a sentence: each extra year of school goes with about $3,350 more income. Hold on to the question of whether the language model's numbers do too.</p>
+    <p>The language model at the top of this page is exactly this kind of thing: a family of formulas with 44 open slots instead of two, and data that chose the 44 numbers. The fitted line has one more property worth noticing now. Its numbers <em>mean</em> something you can say in a sentence: each extra year of school goes with about $3,350 more income a year. Hold on to the question of whether the language model's numbers do too.</p>
   </div>
 </section>
 
@@ -123,6 +123,7 @@
         <tr><td>\(M^{\top}\)</td><td>"Transpose": flip a table so its rows become columns.</td></tr>
         <tr><td>\(P(A \mid B)\)</td><td>The probability of \(A\), given that \(B\) is true. Read the bar as "given".</td></tr>
         <tr><td>\(f(x)\)</td><td>A <strong>function</strong>: a rule that takes \(x\) in and gives something back. The whole model is one function.</td></tr>
+        <tr><td>\(\log P\)</td><td>The logarithm: the power you'd have to raise \(e\) to in order to get \(P\). It undoes \(e^{z}\). For probabilities it's always zero or negative: \(\log 1 = 0\), \(\log 0.5 \approx -0.69\).</td></tr>
         <tr><td>\(\theta\)</td><td>The Greek letter theta, used for all of a model's adjustable numbers at once.</td></tr>
       </tbody>
     </table>
@@ -157,9 +158,9 @@
 <section class="chapter" id="matrices">
   <div class="col">
     <header><span class="chnum">4</span><h2>Multiplying by a matrix</h2></header>
-    <p>The model's basic move is to take a word's two numbers and turn them into two <em>new</em> numbers by multiplying by a 2×2 matrix. Here's the rule, in full:</p>
-    <div class="math-block">\[ (x_1,\ x_2)\begin{pmatrix} a & b\\ c & d \end{pmatrix} \;=\; (\,x_1 a + x_2 c,\;\; x_1 b + x_2 d\,) \]</div>
-    <p>Each new number is a weighted blend of the old ones. The first column \((a, c)\) gives the recipe for the first new number: \(a\) parts of \(x_1\) plus \(c\) parts of \(x_2\). The second column is the recipe for the second. That's all matrix multiplication is: going down each column, multiplying pairs and adding.</p>
+    <p>The model's basic move is to take a word's two numbers and turn them into two <em>new</em> numbers by multiplying by a 2×2 matrix. Here's the rule, in full, writing the word's two numbers as \(u_1\) and \(u_2\):</p>
+    <div class="math-block">\[ (u_1,\ u_2)\begin{pmatrix} a & b\\ c & d \end{pmatrix} \;=\; (\,u_1 a + u_2 c,\;\; u_1 b + u_2 d\,) \]</div>
+    <p>Each new number is a weighted blend of the old ones. The first column \((a, c)\) gives the recipe for the first new number: \(a\) parts of \(u_1\) plus \(c\) parts of \(u_2\). The second column is the recipe for the second. That's all matrix multiplication is: going down each column, multiplying pairs and adding.</p>
     <p>With real numbers: the model has a matrix called \(\WQ\) (chapter 7 explains its job). Multiply <span class="tile">cat</span>'s numbers by it:</p>
     <div class="math-block">\[ (0.8,\ -2.3)\begin{pmatrix} -2.1 & 0.5\\ -1.5 & 1.4 \end{pmatrix} = \big(\,0.8\times(-2.1) + (-2.3)\times(-1.5),\;\; 0.8\times 0.5 + (-2.3)\times 1.4\,\big) = (1.77,\ -2.82) \]</div>
     <p>Step through it yourself with any word and any of the model's three 2×2 matrices:</p>
@@ -185,7 +186,9 @@
     <header><span class="chnum">5</span><h2>The dot product: how much two arrows agree</h2></header>
     <p>Think of a vector as an arrow from the center of the plane to its point. The <strong>dot product</strong> of two arrows multiplies their matching numbers and adds:</p>
     <div class="math-block">\[ a \cdot b \;=\; a_1 b_1 + a_2 b_2 \]</div>
-    <p>The result measures agreement. It's large and positive when the arrows point the same way, near zero when they're at right angles, and negative when they point apart. Longer arrows make the number bigger in either direction. Drag the arrow tips:</p>
+    <p>The result measures agreement, scaled by size. It's large and positive when the arrows point the same way, near zero when they're at right angles, and negative when they point apart. Longer arrows push the number further from zero, whichever sign it has. In fact the dot product always equals</p>
+    <div class="math-block">\[ a \cdot b \;=\; (\text{length of } a) \times (\text{length of } b) \times (\text{alignment}) \]</div>
+    <p>where the alignment is 1 when the arrows point the same way, 0 at right angles and −1 when they point in opposite directions. (Mathematicians call it the cosine of the angle between them.) Both lengths count as much as the alignment does, which will matter in chapter 8. Drag the arrow tips:</p>
   </div>
   <div class="wide"><div class="widget" data-widget="dot"></div></div>
   <div class="col">
@@ -207,7 +210,7 @@
   </div>
   <div class="wide"><div class="widget" data-widget="softmax"></div></div>
   <div class="col">
-    <p>Two things to notice by playing with it. Adding the same amount to every score changes nothing, because only the gaps matter. And when one score is ahead by more than about 5, it takes nearly all of the probability. The model's scores are often far apart, which is why many of its predictions come out at 100%.</p>
+    <p>Two things to notice by playing with it. Adding the same amount to every score changes nothing, because only the gaps matter. And when one score is ahead by more than about 5, it takes nearly all of the probability. The model's scores are often far apart, which is why many of its predictions come out at 99.9% or more (shown as 100%).</p>
   </div>
 </section>
 
@@ -222,7 +225,7 @@
         <span class="c-query">a <strong>query</strong></span> \(\qv = x\,\WQ\), what this word is looking for;
         <span class="c-key">a <strong>key</strong></span> \(\kv = x\,\WK\), what a word offers to be found by;
         and <span class="c-value">a <strong>value</strong></span> \(\vv = x\,\WV\), what a word hands over if it's chosen. Only the last word needs a query, because only it is making the prediction.</li>
-      <li><strong>Score each word</strong> with the dot product of the last word's query and that word's key: \(s_j = \qv \cdot \kv_j\). Then divide by \(\rt\). (That's the square root of the vectors' length, 2. Real models divide by it so scores don't grow just because vectors get longer; here it's a small, fixed shrink.)</li>
+      <li><strong>Score each word</strong> with the dot product of the last word's query and that word's key: \(s_j = \qv \cdot \kv_j\). Then divide by \(\rt\). (Real models divide by the square root of how many numbers each vector holds, so that scores don't grow just because vectors hold more numbers. Ours hold 2, so here it's a small, fixed shrink.)</li>
       <li><strong>Softmax the scores</strong> into <span class="c-attn">attention weights</span> \(\av_j\) that add up to 1.</li>
       <li><strong>Blend the values</strong> using those weights: \(\zv = \sum_j \av_j\, \vv_j\). A word with weight 1 hands over its whole value; a word with weight 0 contributes nothing.</li>
     </ol>
@@ -284,6 +287,7 @@
   <div class="wide"><div class="math-block" data-widget="fullNumeric"></div></div>
   <div class="col">
     <p>where \(\Xm\) is built from the rows of \(\Ev\) shown in chapter 3. Count them: 16 numbers in \(\Ev\), 4 each in \(\WQ\), \(\WK\) and \(\WV\), and 16 in \(\WO\). Forty-four numbers in all. That list is the model's \(\theta\).</p>
+    <p>One honest caveat: training produced numbers with many decimal places, and we rounded each to one decimal so the equation is readable. That changes the model slightly. Before rounding it reproduced Tinyspeak's habits almost exactly (cats sleep 36% of the time, against 35% in the text); after rounding, cats sleep 42%, and "the" is followed by dog 58% of the time instead of 50%. The grammar survives rounding: in a test of about 1,550 sampled sentences, both versions broke a rule only once or twice. The rounded equation is the one used everywhere on this page.</p>
     <h3>Without the shorthand</h3>
     <p>Matrices are an abbreviation. Unpack every one of them into plain multiplications and additions and you get a formula that uses nothing but numbers, \(+\), \(\times\), \(\div\) and exp( ), which means \(e\) raised to the power in the brackets. For a three-word input, the probability of a single next word is one line about 12,000 characters long. Below it is written out with your phrase's numbers plugged in. Switch to symbols to see the version that works for any phrase, where \(x_{11}\) means "the first number of the first word", \(x_{12}\) "the second number of the first word", and so on.</p>
   </div>
@@ -323,7 +327,7 @@
     <p>These rules produced a training text of <span data-fill="nSent">39,845</span> sentences. The model was never shown the rules, only the text. Here's how it starts:</p>
     <div data-widget="corpus"></div>
     <h3>Measuring how wrong a model is</h3>
-    <p>For a line, the error was the area of the squares. For a language model, the standard measure is <strong>surprise</strong>. At every position in the text, ask the model how likely it thought the word that actually came next was, and score that as \(-\log P\). A model that gave the right word probability 1 has surprise 0. Probability 0.5 gives 0.69, and 0.01 gives 4.6. The <strong>loss</strong> \(L\) is the average surprise over all <span data-fill="nTokens">179,416</span> predictions in the text.</p>
+    <p>For a line, the error was the area of the squares. For a language model, the standard measure is <strong>surprise</strong>. At every position in the text, ask the model how likely it thought the word that actually came next was, and score that as \(-\log P\) (minus the logarithm from chapter 2, so that it comes out positive). A model that gave the right word probability 1 has surprise 0. Probability 0.5 gives 0.69, and 0.01 gives 4.6. The <strong>loss</strong> \(L\) is the average surprise over all <span data-fill="nTokens">179,416</span> predictions in the text.</p>
     <p>Then training is the same move as least squares, with \(\theta\) standing for all 44 numbers and \(D\) for the data:</p>
     <div class="math-block">\[ \theta^{*} \;=\; \arg\min_{\theta}\; L(\theta;\, D) \]</div>
     <p>"\(\arg\min\)" means "the choice of \(\theta\) that makes \(L\) smallest". The star marks the winner.</p>
@@ -332,7 +336,7 @@
   </div>
   <div class="wide"><div class="widget" data-widget="trainer"></div></div>
   <div class="col">
-    <p>Now try a few different random starts. Most of them never reach the dashed line. A common outcome is a loss of around 0.50 to 0.53: a model that has learned what kind of word comes next but treats "who gets chased" as close to a coin flip. That's the one rule that needs attention to look back at the subject. Other starts stall higher still, with even the grammar half learned. Training finds <em>a</em> set of numbers by walking downhill, and it can settle in a valley that isn't the deepest one. In twelve random starts tried while building this page, exactly one reached the bottom, and the model used throughout this page grew from that same start. (It was trained by literally nudging each number, so if you train start 1 here and compare, a few numbers differ in the first decimal place. Same behavior, slightly different equation.)</p>
+    <p>Now try a few different random starts. Most of them never reach the dashed line. A common outcome is a loss of around 0.50 to 0.53: a model that has learned what kind of word comes next but treats "who gets chased" as close to a coin flip. That's the one rule that needs attention to look back at the subject. Other starts stall higher still, with even the grammar half learned. Training finds <em>a</em> set of numbers by walking downhill, and it can settle in a valley that isn't the deepest one. In twelve random starts tried while building this page, exactly one reached the bottom, and the model used throughout this page grew from that same start. (It was trained by literally nudging each number, while this demo uses the faster calculus method, so the two runs take slightly different paths. If you train start 1 here and compare, about half the numbers differ, by at most 0.3. Same behavior, slightly different equation.)</p>
   </div>
 </section>
 
@@ -355,6 +359,7 @@
     </table>
     <p>Every addition is still made of multiplication, addition, exponentials and a few other ordinary functions. So the summary from chapter 9 holds at any size:</p>
     <div class="math-block">\[ P(\text{next token} \mid \text{previous tokens}) \;=\; F_{\theta^*}(\text{previous tokens}) \]</div>
+    <p>Read \(F_{\theta^*}\) as "the function \(F\), with the trained numbers \(\theta^*\) plugged in".</p>
     <p>A real model is one function. In principle you could write it out the way chapter 9 did. In practice: our 44-number model already needs about 12,000 characters for one word's probability. A model with 70 billion numbers, printed at five characters per number, would fill something like 350,000 thick books <em>before writing a single plus sign</em>, and in the fully expanded formula each of those numbers would appear many times over.</p>
     <p>The other thing that grows is the gap between the formula and our understanding of it. That's the subject of the last chapter.</p>
   </div>
@@ -375,14 +380,14 @@
   </div>
   <div class="wide"><div class="widget" data-widget="rules"></div></div>
   <div class="col">
-    <p>They agree everywhere. For this model, on this ground, a few sentences of English describe what 44 numbers do. And we can say more than that by reading the numbers. In the embeddings, chases and sees are identical, so the model treats them as one kind of word. In the attention weights, "the" looks back for the subject, and an animal looks back for a verb or a period to know whether it's the subject or the object. Those are <em>mechanistic</em> explanations, the kind interpretability research tries to find in real models: a story about how the numbers produce the behavior.</p>
+    <p>They agree everywhere. For this model, on this ground, a few sentences of English describe what 44 numbers do. And we can say more than that by reading the numbers. In the embeddings, chases and sees are identical, so when they appear in the input the model can't tell them apart: to it they're the same kind of word. (They do get different arrows in \(\WO\), because cats and dogs use them at different rates.) In the attention weights, "the" looks back toward the subject (entirely after "cat chases the", partly after "dog chases the"), and an animal looks back for a verb or a period to know whether it's the subject or the object. Those are <em>mechanistic</em> explanations, the kind interpretability research tries to find in real models: a story about how the numbers produce the behavior.</p>
 
     <h3>But the equation answers questions the rules don't</h3>
-    <p>With 8 words and a window of 3, there are 8 + 64 + 512 = 584 possible inputs. Only 31 of them can occur in Tinyspeak. For the other 553, the rules say nothing, because those phrases are impossible in the language. The equation still answers every one:</p>
+    <p>With 8 words and a window of 3, there are 8 + 64 + 512 = 584 possible inputs. Only 31 of them can occur in Tinyspeak. The other 553 can't occur in Tinyspeak at all, so the rules were never meant to cover them. Sometimes you can stretch a rule to make a guess (after "sleeps", a sentence ends), and the equation doesn't always follow it. For many phrases, like "dog dog dog", no rule applies at all. The equation answers every one anyway:</p>
   </div>
   <div class="wide"><div class="widget" data-widget="strange"></div></div>
   <div class="col">
-    <p>So which is the real description of what this model does? The three rules are short and intelligible, and they're right on 31 inputs out of 584. The equation is right on all 584 by definition, and nobody would call it intelligible at a glance. The only <em>complete</em> descriptions are the equation itself or a 584-row table of its answers.</p>
+    <p>So which is the real description of what this model does? The three rules are short and intelligible, and they describe the model's behavior on 31 inputs out of 584. The equation describes all 584, since it <em>is</em> the model, and nobody would call it intelligible at a glance. The only <em>complete</em> descriptions are the equation itself or a 584-row table of its answers.</p>
 
     <h3>Even the numbers aren't unique</h3>
     <p>Here's a stranger fact. Double every number in \(\WQ\) and halve every number in \(\WK\). Every query gets twice as long and every key half as long, so every dot product, and therefore every prediction, stays exactly the same. More generally, you can scramble the two matrices together in infinitely many ways without changing anything the model does:</p>
@@ -415,7 +420,7 @@
     </div>
     <div class="possibility">
       <h4>The equation is essentially the shortest faithful description</h4>
-      <p>A basic result from the theory of information says that most long lists of numbers have no description much shorter than the list itself. There simply aren't enough short descriptions to go around. A trained network isn't a random list. It was fitted to highly structured data, and structure in the data should leave structure in the numbers. But that structure could be spread thinly across many numbers at once (researchers have shown small models storing more features than they have dimensions, overlapping them in "superposition"; Elhage and colleagues, 2022). If so, any short set of rules would be a lossy summary: true for typical cases, silent or wrong at the edges, exactly like Tinyspeak's rules on our 553 strange inputs.</p>
+      <p>A basic result from the theory of information says that most long lists of numbers have no description much shorter than the list itself. There simply aren't enough short descriptions to go around. A trained network isn't a random list. It was fitted to highly structured data, and structure in the data should leave structure in the numbers. But that structure could be spread thinly across many numbers at once (researchers have shown small models storing more features than they have dimensions, overlapping them in "superposition"; Elhage and colleagues, 2022). If so, any short set of rules would be a lossy summary: true for typical cases, silent or wrong at the edges, much like Tinyspeak's rules on our strange inputs.</p>
     </div>
 
     <h3>Why the question is hard to settle</h3>
@@ -427,7 +432,7 @@
       <li><strong>Prediction.</strong> To know what the model will do on a genuinely new input, you might have to run it. The formula would be its own shortest explanation.</li>
       <li><strong>Trust.</strong> Assurances about behavior would have to come from testing, measurement, limits on what the system can do, and monitoring, rather than from reading off a set of rules.</li>
       <li><strong>Understanding.</strong> Explanation might shift from the fitted function to the process that produced it: the data and the fitting. Biology explains organisms through evolution without deriving each one, and we understand Tinyspeak's model best through Tinyspeak.</li>
-      <li><strong>Partial pictures.</strong> A description can be good enough for one purpose without being complete. The philosopher Daniel Dennett called the patterns that make such descriptions useful "real patterns". The three rules are a real pattern in our model even though they miss 553 cases.</li>
+      <li><strong>Partial pictures.</strong> A description can be good enough for one purpose without being complete. The philosopher Daniel Dennett called the patterns that make such descriptions useful "real patterns". The three rules are a real pattern in our model even though they don't cover 553 of its 584 possible inputs.</li>
     </ul>
 
     <h3>Questions to take with you</h3>

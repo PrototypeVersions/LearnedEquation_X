@@ -26,7 +26,8 @@ export function rulesSay(ids) {
   return dist;
 }
 
-const summary = (p, min = 0.02) => [...p.keys()].filter((t) => p[t] >= min).sort((a, b) => p[b] - p[a]).map((t) => `${VOCAB[t]} ${pct(p[t])}`).join(", ");
+const wordName = (t) => (VOCAB[t] === "." ? "“.”" : VOCAB[t]);
+const summary = (p, min = 0.02) => [...p.keys()].filter((t) => p[t] >= min).sort((a, b) => p[b] - p[a]).map((t) => `${wordName(t)} ${pct(p[t])}`).join(", ");
 
 export function rules(root) {
   const C = corpus();
@@ -51,9 +52,22 @@ export function rules(root) {
   root.append(
     h("p", { class: "w-title" }, "The rules against the equation, on every phrase Tinyspeak allows"),
     h("div", { class: "scroll-x" }, h("table", { class: "dtable", style: { margin: "8px 0 12px" } }, h("thead", {}, h("tr", {}, h("th", {}, "phrase"), h("th", {}, "the rules say"), h("th", {}, "the equation says"))), preview)),
-    h("p", { class: "status" }, `They agree on which words can come next in ${agree} of ${rows.length} phrases. The biggest difference in any single probability is ${Math.round(maxDiff * 100)} percentage points (the equation doesn't copy the habits exactly; it learned them from a finite text).`),
+    h("p", { class: "status" }, `They agree on which words can come next in ${agree} of ${rows.length} phrases. The biggest difference in any single probability is ${Math.round(maxDiff * 100)} percentage points (that gap comes from rounding the 44 numbers to one decimal place so the equation is readable; before rounding, the model matched every probability to within about 2 points).`),
     h("details", { class: "more" }, h("summary", {}, `Show all ${rows.length} phrases`),
       h("div", { class: "scroll-x" }, h("table", { class: "dtable" }, h("thead", {}, h("tr", {}, h("th", {}, "phrase"), h("th", {}, "the rules say"), h("th", {}, "the equation says"), h("th", {}, "agree"))), body))));
+}
+
+// Stretch Tinyspeak's rules to a phrase that can't occur, using only its last word(s).
+// Returns { words: [...allowed next words], why } or { words: null, why }.
+export function stretchRules(ids) {
+  const w = ids.map((t) => VOCAB[t]);
+  const last = w.at(-1), prev = w.at(-2);
+  if (last === ".") return { words: ["the"], why: "every sentence starts with “the”" };
+  if (last === "runs" || last === "sleeps") return { words: ["."], why: `“${last}” ends the sentence` };
+  if (last === "chases" || last === "sees") return { words: ["the"], why: `“${last}” is followed by “the”` };
+  if (last === "the") return { words: ["cat", "dog"], why: "“the” is followed by an animal" };
+  if (prev === "the") return { words: ["runs", "sleeps", "chases", "sees", "."], why: "after “the” and an animal comes an action, or the end of the sentence" };
+  return { words: null, why: "in Tinyspeak an animal only ever comes right after “the”, so no rule applies" };
 }
 
 export function strange(root) {
@@ -63,26 +77,29 @@ export function strange(root) {
     rec([]);
   }
   const odd = all.filter((ids) => rulesSay(ids) === null);
-  const curated = ["dog dog dog", "sleeps sleeps sleeps", "the the the", "chases", "cat . dog", "runs the", "sees cat"].map(M.tokenize);
-  let k = 0;
-  let confident = 0;
-  const favorite = new Array(M.V).fill(0);
-  for (const ids of odd) { const p = M.forward(W, ids).probs; const t = M.argmax(p); favorite[t]++; if (p[t] > 0.9) confident++; }
+  const curated = ["dog dog dog", "sleeps sleeps sleeps", "cat sees", "the the the", "cat . dog", "runs the", "sees cat"].map(M.tokenize);
+  let k = 0, confident = 0, covered = 0, follows = 0;
+  for (const ids of odd) {
+    const p = M.forward(W, ids).probs, t = M.argmax(p), st = stretchRules(ids);
+    if (p[t] > 0.9) confident++;
+    if (st.words) { covered++; if (st.words.includes(VOCAB[t])) follows++; }
+  }
   const show = h("div");
   const next = h("button", { class: "primary" }, "Show another strange phrase");
   const draw = () => {
     const ids = k < curated.length ? curated[k] : odd[Math.floor(Math.random() * odd.length)];
-    const p = M.forward(W, ids).probs;
+    const p = M.forward(W, ids).probs, top = VOCAB[M.argmax(p)], st = stretchRules(ids);
     show.innerHTML = "";
-    show.append(
-      h("div", { class: "tok-strip" }, ids.map((t) => tile(t))),
-      h("p", { class: "out-line" }, h("strong", {}, "The rules: "), "nothing. This phrase can't occur in Tinyspeak."),
-      h("p", { class: "out-line" }, h("strong", {}, "The equation: "), summary(p, 0.05) + "."));
+    const ruleLine = h("p", { class: "out-line" }, h("strong", {}, "The rules: "), "this phrase can't occur in Tinyspeak. ");
+    if (st.words) ruleLine.append(`Stretching them by the last word: ${st.why}, so they'd suggest ${st.words.map((x) => `“${x}”`).join(" or ")}.`);
+    else ruleLine.append(`Even stretching them doesn't help: ${st.why}.`);
+    const eqLine = h("p", { class: "out-line" }, h("strong", {}, "The equation: "), summary(p, 0.05) + ". ");
+    if (st.words) eqLine.append(h("span", { class: st.words.includes(top) ? "good" : "bad" }, st.words.includes(top) ? "Its top answer fits the stretched rule." : "Its top answer doesn't fit the stretched rule."));
+    show.append(h("div", { class: "tok-strip" }, ids.map((t) => tile(t))), ruleLine, eqLine);
   };
   next.addEventListener("click", () => { k++; draw(); });
-  const favTop = [...favorite.keys()].sort((a, b) => favorite[b] - favorite[a]).slice(0, 3).map((t) => `“${VOCAB[t]}” for ${favorite[t]}`).join(", ");
-  root.append(h("p", { class: "w-title" }, `${odd.length} phrases the rules never mention`), show, h("div", { class: "w-row" }, next),
-    h("p", { class: "status" }, `Across all ${odd.length}, the equation is more than 90% sure of its answer for ${confident} of them. Its most common answers: ${favTop}. None of these answers were ever checked against anything; they're simply what the formula happens to give.`));
+  root.append(h("p", { class: "w-title" }, `${odd.length} phrases that can't occur in Tinyspeak`), show, h("div", { class: "w-row" }, next),
+    h("p", { class: "status" }, `Across all ${odd.length}: for ${covered}, a rule can be stretched by looking at the last word, and the equation's top answer fits that stretched rule in ${follows} of them. For the other ${odd.length - covered}, no rule applies at all. The equation answers every one, and is more than 90% sure of its answer for ${confident}. None of those answers was ever checked against anything; they're simply what the formula happens to give.`));
   draw();
 }
 

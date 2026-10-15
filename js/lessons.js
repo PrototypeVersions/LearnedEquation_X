@@ -344,14 +344,18 @@ export function dot(root) {
     hA.setAttribute("cx", P.X(a[0])); hA.setAttribute("cy", P.Y(a[1]));
     hB.setAttribute("cx", P.X(b[0])); hB.setAttribute("cy", P.Y(b[1]));
     const d = a[0] * b[0] + a[1] * b[1];
-    const cos = d / (Math.hypot(...a) * Math.hypot(...b) || 1);
-    const verdict = cos > 0.92 ? "pointing nearly the same way" : cos > 0.3 ? "pointing roughly the same way" : cos > -0.3 ? "close to right angles" : cos > -0.92 ? "pointing roughly apart" : "pointing in opposite directions";
+    const la = Math.hypot(...a), lb = Math.hypot(...b);
+    const zero = la < 1e-9 || lb < 1e-9;
+    const cos = zero ? 0 : d / (la * lb);
+    const verdict = zero ? "" : cos > 0.92 ? "pointing nearly the same way" : cos > 0.3 ? "pointing roughly the same way" : cos > -0.3 ? "close to right angles" : cos > -0.92 ? "pointing roughly apart" : "pointing in opposite directions";
     out.innerHTML = "";
     out.append(
       h("p", { class: "out-line" }, texEl(`\\htmlClass{c-query}{a} = ${vecTex(a, 1)},\\quad \\htmlClass{c-key}{b} = ${vecTex(b, 1)}`)),
       h("p", { class: "out-line" }, texEl(`\\htmlClass{c-query}{a}\\cdot \\htmlClass{c-key}{b} = ${fmtTex(a[0], 1)}\\times${fmtTex(b[0], 1)} + ${fmtTex(a[1], 1)}\\times${fmtTex(b[1], 1)}`)),
       h("p", {}, h("span", { class: "big-num " + (d > 0.05 ? "good" : d < -0.05 ? "bad" : "") }, fmt(d, 2))),
-      h("p", { class: "w-help" }, `The arrows are ${verdict}.`));
+      zero ? h("p", { class: "w-help" }, "One arrow has zero length, so the dot product is 0 whatever the direction.")
+        : h("p", { class: "out-line" }, texEl(`= \\underbrace{${fmtTex(la, 2)}}_{\\text{length of } a} \\times \\underbrace{${fmtTex(lb, 2)}}_{\\text{length of } b} \\times \\underbrace{${fmtTex(cos, 2)}}_{\\text{alignment}}`)),
+      zero ? "" : h("p", { class: "w-help" }, `The arrows are ${verdict}.`));
   };
   const snap = (v) => Math.max(-3.8, Math.min(3.8, Math.round(v * 2) / 2));
   draggable(P, hA, (x, y) => { a = [snap(x), snap(y)]; draw(); });
@@ -363,15 +367,17 @@ export function dot(root) {
 // ---------------------------------------------------------------- 6 softmax
 export function softmax(root) {
   const words = [I.dog, I.cat, I.runs, I["."]];
+  const ZMIN = -10, ZMAX = 15;
   let z = [3, 2, 0, -1];
   const sl = h("div"), tbl = h("div", { class: "scroll-x" }), barBox = h("div");
   const shift = h("button", { class: "ghost" }, "Add 5 to every score");
+  const unshift = h("button", { class: "ghost" }, "Subtract 5 from every score");
   const resetB = h("button", { class: "ghost" }, "Reset");
   root.append(h("div", { class: "w-grid two" },
-    h("div", {}, h("p", { class: "w-title" }, "Scores"), h("p", { class: "w-help" }, "Any numbers, positive or negative."), sl, h("div", { class: "w-row" }, shift, resetB)),
+    h("div", {}, h("p", { class: "w-title" }, "Scores"), h("p", { class: "w-help" }, "Any numbers, positive or negative."), sl, h("div", { class: "w-row" }, shift, unshift, resetB)),
     h("div", {}, h("p", { class: "w-title" }, "Probabilities"), barBox)), tbl);
   const inputs = words.map((t, k) => {
-    const inp = h("input", { type: "range", min: -6, max: 12, step: 0.5, value: z[k], "aria-label": `Score for ${VOCAB[t]}` });
+    const inp = h("input", { type: "range", min: ZMIN, max: ZMAX, step: 0.5, value: z[k], "aria-label": `Score for ${VOCAB[t]}` });
     const v = h("span", { class: "w-num" });
     inp.addEventListener("input", () => { z[k] = +inp.value; draw(); });
     sl.append(h("div", { class: "slider" }, h("span", {}, tile(t)), inp, v));
@@ -381,6 +387,8 @@ export function softmax(root) {
     const p = M.softmax(z);
     const e = z.map(Math.exp), tot = e.reduce((x, y) => x + y, 0);
     inputs.forEach(([inp, v], k) => { inp.value = z[k]; v.textContent = fmt(z[k], 1); });
+    shift.disabled = Math.max(...z) + 5 > ZMAX;
+    unshift.disabled = Math.min(...z) - 5 < ZMIN;
     bars(barBox, words.map((t, k) => ({ label: VOCAB[t], p: p[k] })));
     tbl.innerHTML = "";
     const big = (x) => (x >= 1e4 ? x.toExponential(2).replace("e+", "×10^") : fmt(x, x < 1 ? 3 : 2));
@@ -389,7 +397,8 @@ export function softmax(root) {
       h("tbody", {}, words.map((t, k) => h("tr", {}, h("td", {}, tile(t)), h("td", { class: "r num" }, fmt(z[k], 1)), h("td", { class: "r num" }, big(e[k])), h("td", { class: "r num" }, fmt(p[k], 3)))),
         h("tr", {}, h("td", {}, "total"), h("td"), h("td", { class: "r num" }, big(tot)), h("td", { class: "r num" }, "1.000")))));
   };
-  shift.addEventListener("click", () => { z = z.map((v) => Math.min(12, v + 5)); draw(); });
+  shift.addEventListener("click", () => { z = z.map((v) => v + 5); draw(); });
+  unshift.addEventListener("click", () => { z = z.map((v) => v - 5); draw(); });
   resetB.addEventListener("click", () => { z = [3, 2, 0, -1]; draw(); });
   draw();
 }

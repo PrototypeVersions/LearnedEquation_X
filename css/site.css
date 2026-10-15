@@ -270,7 +270,7 @@ em { font-style: italic; }
 .widget .w-help { color: var(--ink-2); font-size: 15px; margin: 0 0 14px; }
 .widget p { margin: 0 0 10px; }
 .w-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0; }
-.w-grid { display: grid; gap: 18px; grid-template-columns: 1fr; }
+.w-grid { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 760px) { .w-grid.two { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
 .w-label { font-size: 14px; color: var(--ink-2); }
 .num, .w-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
@@ -372,7 +372,8 @@ button.tile:active { transform: translateY(1px); border-bottom-width: 1.5px; }
 .bars .pick:hover .bar { outline: 1px solid var(--ink-3); }
 
 /* step trace */
-.trace { display: grid; gap: 10px; }
+.trace { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+.trace .st { min-width: 0; }
 .trace .st { padding: 10px 12px; border-radius: 8px; background: var(--paper); border: 1px solid var(--rule); }
 .trace .st h4 { margin: 0 0 4px; font-size: 15px; }
 .trace .st .katex { font-size: 1em; }
