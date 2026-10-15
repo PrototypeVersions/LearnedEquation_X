@@ -372,8 +372,10 @@
 
     <h3>The shortcut: predicted minus actual</h3>
     <p>Measuring slopes by nudging costs one extra run of the whole model for every number: 44 extra runs per step here, and billions for a large model. That would make training large models impossible. The method actually used, <strong>backpropagation</strong>, gets every slope for roughly the cost of one extra run, by working backwards through the equation and reusing work along the way.</p>
-    <p>It starts from a remarkably simple fact. For the eight final scores, the slope of the surprise is just</p>
+    <p>It starts with the eight scores from chapter 8, the ones softmax turns into probabilities. For each word, ask the same question as before: if this word's score were nudged up a tiny bit, how much would the surprise change? That slope is what this page calls the word's <strong>blame</strong>. (Textbooks call it the gradient, or the error signal.) A positive blame means raising the score would make the prediction worse, so the step lowers it. A negative blame means raising it would help, so the step raises it.</p>
+    <p>Here is the remarkably simple fact. Writing \(t\) for any one of the eight words:</p>
     <div class="math-block">\[ \text{blame on word } t \;=\; \underbrace{p_t}_{\text{probability the model gave it}} \;-\; \underbrace{y_t}_{1 \text{ if it came next, else } 0} \]</div>
+    <p>For example, if the model gave "dog" a probability of 0.16 and "dog" really came next, dog's blame is \(0.16 - 1 = -0.84\): strongly negative, so dog's score goes up. If it gave "chases" 0.16 and chases didn't come next, chases' blame is \(0.16 - 0 = +0.16\), so its score goes down a little.</p>
     <p>So the downhill step raises the score of the word that actually came next, in proportion to how badly it was under-predicted, and lowers every other word's score in proportion to the probability it wrongly took. Everything else in training follows from passing this blame backwards through the equation, one step at a time, in the reverse of the order the prediction was computed. At each stage the rule comes from the chain rule of calculus, and the pattern is always the same: the slope for a matrix's number is <em>what flowed into it</em> times <em>the blame that came out of it</em>.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="blame"></div></div>
