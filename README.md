@@ -1,4 +1,6 @@
-# One Equation That Writes Sentences
+# Finally, see exactly how AI works
+
+*One equation that writes sentences, and how to read it.*
 
 A complete tiny language model, written as a single equation with 44 numbers, and a step-by-step page that teaches a newcomer to read every symbol in it.
 
