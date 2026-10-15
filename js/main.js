@@ -154,7 +154,21 @@ function eqbar() {
   update();
 }
 
+// "See an example" buttons open and close the example box they control.
+function examples() {
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest?.(".ex-btn");
+    if (!b) return;
+    const box = document.getElementById(b.getAttribute("aria-controls"));
+    const open = b.getAttribute("aria-expanded") !== "true";
+    b.setAttribute("aria-expanded", String(open));
+    b.textContent = open ? "Hide the example" : "See an example";
+    if (box) box.hidden = !open;
+  });
+}
+
 async function start() {
+  examples();
   await whenKatex();
   window.renderMathInElement(document.body, {
     ...KATEX_OPTS,

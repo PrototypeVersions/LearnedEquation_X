@@ -188,8 +188,30 @@
   <div class="col">
     <p>Two more facts and you have all the matrix multiplication the model uses:</p>
     <ul>
-      <li>To multiply a whole table \(\Xm\) by a matrix, multiply each row separately. Three rows in, three rows out.</li>
-      <li>The matrix doesn't have to be square. A vector of 2 numbers times a 2×8 matrix gives 8 numbers, one per column. The model uses exactly this at the end to give every word in the language a score.</li>
+      <li>To multiply a whole table \(\Xm\) by a matrix, multiply each row separately. Three rows in, three rows out. <button class="ex-btn" type="button" aria-expanded="false" aria-controls="ex-rows">See an example</button>
+        <div class="ex-box" id="ex-rows" hidden>
+          <p>Take "the cat sleeps" from chapter 3. Its table \(\Xm\) has one row per word. Multiply it by the model's matrix \(\WK\) (the formula really does this, in chapter 7):</p>
+          <div class="math-block">\[ \begin{aligned} &\begin{matrix}\text{the}\\ \text{cat}\\ \text{sleeps}\end{matrix}\; \htmlClass{c-word}{\begin{pmatrix} -3.8 & 1.5\\ 0.8 & -2.3\\ -3.0 & 5.1 \end{pmatrix}} \htmlClass{c-key}{\begin{pmatrix} 2.3 & -1.4\\ -1.8 & 0.0 \end{pmatrix}} \\[6pt] &= \begin{pmatrix} -11.44 & 5.32\\ 5.98 & -1.12\\ -16.08 & 4.20 \end{pmatrix} \end{aligned} \]</div>
+          <p>Each row of the answer is one row of \(\Xm\) multiplied on its own, the same way as cat's numbers above. For the cat row, going down \(\WK\)'s two columns:</p>
+          <div class="math-block">\[ \begin{aligned} 0.8\times 2.3 + (-2.3)\times(-1.8) &= 5.98\\ 0.8\times(-1.4) + (-2.3)\times 0.0 &= -1.12 \end{aligned} \]</div>
+          <p>That gives \((5.98,\ -1.12)\), the middle row of the answer. The rows for "the" and "sleeps" are worked out the same way, each using only its own two numbers. The rows never mix, so three rows go in and three come out, one per word.</p>
+        </div>
+      </li>
+      <li>The matrix doesn't have to be square. A vector of 2 numbers times a 2×8 matrix gives 8 numbers, one per column. The model uses exactly this at the end to give every word in the language a score. <button class="ex-btn" type="button" aria-expanded="false" aria-controls="ex-wide">See an example</button>
+        <div class="ex-box" id="ex-wide" hidden>
+          <p>Take any two numbers, say \((1,\ 2)\), and multiply them by the model's 2×8 matrix \(\WO,\) which has one column per word:</p>
+          <div class="math-block">\[ (1,\ 2)\;\htmlClass{c-out}{\begin{pmatrix} 6.1 & -3.7 & -4.2 & -0.9 & 0.4 & -1.4 & -0.2 & 1.1\\ -2.5 & 3.0 & 0.1 & -4.1 & -4.7 & -3.9 & -4.4 & 3.9 \end{pmatrix}} \]</div>
+          <p>Each column gives one number, worked out the same way as before. The first column belongs to "the", the second to "cat", and so on:</p>
+          <div class="math-block">\[ \begin{aligned}
+            \text{the:}&\quad 1\times 6.1 + 2\times(-2.5) = 1.1\\
+            \text{cat:}&\quad 1\times(-3.7) + 2\times 3.0 = 2.3\\
+            \text{dog:}&\quad 1\times(-4.2) + 2\times 0.1 = -4.0
+          \end{aligned} \]</div>
+          <p>and so on across all eight columns. Two numbers go in and eight come out, one for each word:</p>
+          <div class="math-block">\[ \begin{array}{cccc} \text{the} & \text{cat} & \text{dog} & \text{runs}\\ 1.1 & 2.3 & -4.0 & -9.1\\[10pt] \text{sleeps} & \text{chases} & \text{sees} & \text{.}\\ -9.0 & -9.2 & -9.0 & 8.9 \end{array} \]</div>
+          <p>In chapter 8 the two numbers going in will be the model's summary of the phrase so far, and the eight coming out will be the scores for each possible next word.</p>
+        </div>
+      </li>
     </ul>
   </div>
 </section>
