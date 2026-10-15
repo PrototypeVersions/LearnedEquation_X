@@ -155,6 +155,7 @@
     <p>A computer can't multiply the word "cat". So the first thing the model does is swap each word for a fixed list of numbers. Our model's whole language has eight words:</p>
     <p class="tiles" data-widget="vocab"></p>
     <p>The period counts as a word too. It's how the model ends a sentence.</p>
+    <p>The model learned from text in a tiny made-up language, <em>Tinyspeak</em>, with simple rules. Every sentence starts with "the" and an animal, cat or dog, followed by an action. "runs" and "sleeps" end the sentence; after "chases" or "sees" comes "the" and the <em>other</em> animal. So after "cat chases the", the next word should be "dog". Chapter 11 gives the full rules and shows how the model picked them up from the text.</p>
     <p>Each word gets two numbers. Two numbers are exactly what you need to mark a point on a flat plane (across, then up), so every word in the language is a point. These lists are called the words' <strong>embeddings</strong>.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="embed"></div></div>
@@ -277,6 +278,7 @@
   <div class="col">
     <p>With "cat chases the", about 99.6% of the attention lands on <span class="tile">cat</span>, so the blend is almost exactly cat's value. The last word has found the subject. Switch to "chases the cat" and the word <span class="tile">cat</span> looks back at <span class="tile">chases</span> instead: that's how it knows it's the object and the sentence should end. With ". the cat" it looks at the period and knows a verb comes next.</p>
     <p>Now try "dog chases the". The attention splits between <span class="tile">dog</span> and <span class="tile">chases</span>, yet the result still leads to <span class="tile">cat</span>. Training found a solution that works, not the tidy one a person might have designed. That gap between "works" and "tidy" comes back in chapter 14.</p>
+    <p>One thing this attention can't see is word order. Apart from knowing which word is last, it treats the words as an unordered set, so "chases cat the" gets exactly the same prediction as "cat chases the": dog, at over 99.9%. Our model gets away with this because word order in Tinyspeak never varies. Real models can't: "dog bites man" and "man bites dog" must come out differently, so they give attention information about each word's position (chapter 13).</p>
     <h3>All of attention as one expression</h3>
     <p>Write the keys of all the words as rows of a table, \(\Xm\WK\). Flipping it with \({}^{\T}\) turns the keys into columns, so multiplying the query by it computes every score at once (each column gives one dot product). That gives the whole of attention in one line:</p>
     <div class="math-block">\[ \zv \;=\; \smA\!\Big(\, \xn \WQ\, (\Xm\WK)^{\T} / \rt \,\Big)\; \Xm \WV \]</div>
@@ -290,7 +292,7 @@
     <header><span class="chnum c-out" data-sym="ch8">8</span><h2>Making the prediction</h2></header>
     <p>Attention has produced \(\zv\), two numbers summarizing what the last word found by looking back. Three short steps turn that into a prediction.</p>
     <ol class="steps">
-      <li><strong>Add the word back in.</strong> \(r = \xn + \zv\). Attention's findings are added on top of what the last word already was, so neither is lost. Real models do this everywhere; it's called a <em>residual connection</em>. Adding two vectors just adds their matching numbers (two matrices of the same shape add the same way, entry by entry). For "cat chases the", \(\xn\) is the's numbers \(\htmlClass{c-word}{(-3.8,\ 1.5)}\) and chapter 7's blend gave \(\zv = \htmlClass{c-value}{(-2.73,\ -3.30)}\), so
+      <li><strong>Add the word back in.</strong> \(r = \xn + \zv\). Attention's findings are added on top of what the last word already was, so the result reflects both, instead of attention's findings replacing the word. Real models do this everywhere; it's called a <em>residual connection</em>. Adding two vectors just adds their matching numbers (two matrices of the same shape add the same way, entry by entry). For "cat chases the", \(\xn\) is the's numbers \(\htmlClass{c-word}{(-3.8,\ 1.5)}\) and chapter 7's blend gave \(\zv = \htmlClass{c-value}{(-2.73,\ -3.30)}\), so
         <div class="math-block">\[ \begin{aligned} r &= \htmlClass{c-word}{(-3.8,\ 1.5)} + \htmlClass{c-value}{(-2.73,\ -3.30)} \\ &= \big(\htmlClass{c-word}{{-3.8}} - \htmlClass{c-value}{2.73},\;\; \htmlClass{c-word}{1.5} - \htmlClass{c-value}{3.30}\big) \\ &= (-6.53,\ -1.80) \end{aligned} \]</div></li>
       <li><strong>Score every word in the language.</strong> Multiply \(r\) by the 2×8 matrix \(\WO\). Each of its eight columns is an arrow belonging to one word, and each score is the dot product of \(r\) with that word's arrow. As in chapter 5, a word scores high when its arrow points the same way as \(r\) <em>and</em> when its arrow is long. Near the top, small differences in direction barely matter, so a longer arrow can beat one that is better aimed.</li>
       <li><strong>Softmax</strong> the eight scores into eight probabilities.</li>
@@ -510,14 +512,14 @@
   </div>
   <div class="wide"><div class="widget" data-widget="rules"></div></div>
   <div class="col">
-    <p>They agree everywhere. For this model, on this ground, a few sentences of English describe what 44 numbers do. And we can say more than that by reading the numbers. In the embeddings, chases and sees are identical, so when they appear in the input the model can't tell them apart: to it they're the same kind of word. (They do get different arrows in \(\WO\), because cats and dogs use them at different rates.) In the attention weights, "the" looks back toward the subject (entirely after "cat chases the", partly after "dog chases the"), and an animal looks back for a verb or a period to know whether it's the subject or the object. Those are <em>mechanistic</em> explanations, the kind interpretability research tries to find in real models: a story about how the numbers produce the behavior.</p>
+    <p>They agree on which words can come next in every one, and the probabilities are close, though not identical (the widget shows the largest gap). Words the rules forbid still get tiny probabilities rather than exactly zero, because softmax never gives exactly zero. For this model, on this ground, a few sentences of English describe closely what 44 numbers do. And we can say more than that by reading the numbers. In the embeddings, chases and sees are identical, so when they appear in the input the model can't tell them apart: to it they're the same kind of word. (They do get different arrows in \(\WO\), because cats and dogs use them at different rates.) In the attention weights, "the" looks back toward the subject (entirely after "cat chases the", partly after "dog chases the"), and an animal looks back for a verb or a period to know whether it's the subject or the object. Those are <em>mechanistic</em> explanations, the kind interpretability research tries to find in real models: a story about how the numbers produce the behavior.</p>
 
     <h3>But the equation answers questions the rules don't</h3>
     <p>With 8 words and a window of 3, there are 8 + 64 + 512 = 584 possible inputs. Only 31 of them can occur in Tinyspeak. The other 553 can't occur in Tinyspeak at all, so the rules were never meant to cover them. Sometimes you can stretch a rule to make a guess (after "sleeps", a sentence ends), and the equation doesn't always follow it. For many phrases, like "dog dog dog", no rule applies at all. The equation answers every one anyway:</p>
   </div>
   <div class="wide"><div class="widget" data-widget="strange"></div></div>
   <div class="col">
-    <p>So which is the real description of what this model does? The three rules are short and intelligible, and they describe the model's behavior on 31 inputs out of 584. The equation describes all 584, since it <em>is</em> the model, and nobody would call it intelligible at a glance. The only <em>complete</em> descriptions are the equation itself or a 584-row table of its answers.</p>
+    <p>So which is the real description of what this model does? The three rules are short and intelligible, and they describe the model's behavior on 31 inputs out of 584. The equation describes all 584, since it <em>is</em> the model, and nobody would call it intelligible at a glance. The <em>complete</em> descriptions we have are the equation itself and a 584-row table of its answers. Other exact descriptions may exist, but neither of these two reads like an explanation.</p>
 
     <h3>Even the numbers aren't unique</h3>
     <p>Here's a stranger fact. Double every number in \(\WQ\) and halve every number in \(\WK\). Every query gets twice as long and every key half as long, so every dot product, and therefore every prediction, stays exactly the same. More generally, you can scramble the two matrices together in infinitely many ways without changing anything the model does:</p>
@@ -538,6 +540,7 @@
       </tbody>
     </table>
     <p>Each step down is shorter and easier to understand, and may leave things out. The deep question is about the bottom of the ladder: <strong>could there be a language model for which the giant equation is essentially the best description possible, where no substantially simpler set of higher-level rules captures what it does?</strong></p>
+    <p>Two different goals hide in that question. One is an exact description, which reproduces every probability on every input. The other is an explanation of the behavior that matters, which can be very useful without reproducing every decimal on unusual inputs. A model could have a good explanation of the second kind even if its equation is the shortest description of the first kind.</p>
 
     <h3>Three possible answers</h3>
     <div class="possibility">
@@ -550,7 +553,7 @@
     </div>
     <div class="possibility">
       <h4>The equation is essentially the shortest faithful description</h4>
-      <p>A basic result from the theory of information says that most long lists of numbers have no description much shorter than the list itself. There simply aren't enough short descriptions to go around. A trained network isn't a random list. It was fitted to highly structured data, and structure in the data should leave structure in the numbers. But that structure could be spread thinly across many numbers at once (researchers have shown small models storing more features than they have dimensions, overlapping them in "superposition"; Elhage and colleagues, 2022). If so, any short set of rules would be a lossy summary: true for typical cases, silent or wrong at the edges, much like Tinyspeak's rules on our strange inputs.</p>
+      <p>A basic result from the theory of information says that most long lists of numbers have no description much shorter than the list itself. There simply aren't enough short descriptions to go around. A trained network isn't a random list. It was fitted to highly structured data, and structure in the data should leave structure in the numbers. But that structure could be spread thinly across many numbers at once (researchers have shown small models storing more features than they have dimensions, overlapping them in "superposition"; Elhage and colleagues, 2022, though in those small models the overlap itself could be worked out mathematically). If so, any short set of rules would be a lossy summary: true for typical cases, silent or wrong at the edges, much like Tinyspeak's rules on our strange inputs.</p>
     </div>
 
     <h3>Why the question is hard to settle</h3>
