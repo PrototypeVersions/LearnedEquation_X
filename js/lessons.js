@@ -282,7 +282,7 @@ export function transform(root) {
     P.m = m;
     P.svg.prepend(s("defs", {}, s("clipPath", { id: "clipT" }, s("rect", { x: P.X(-m), y: P.Y(m), width: P.X(m) - P.X(-m), height: P.Y(-m) - P.Y(m) }))));
     holder.innerHTML = ""; holder.append(P.svg);
-    note.textContent = mat === "WQ" ? "The query matrix rotates and stretches the plane. Every word's query is where its point ends up." : mat === "WK" ? "The key matrix flips and stretches the plane differently. Keys and queries live in the same plane so their dot products can be compared." : "The value matrix squeezes the plane into a narrow band: values mostly vary along one direction.";
+    note.textContent = mat === "WQ" ? "The query matrix stretches the plane, turns it, and flips it over. Every word's query is where its point ends up." : mat === "WK" ? "The key matrix flips and stretches the plane differently. Keys and queries live in the same plane so their dot products can be compared." : "The value matrix flips the plane and flattens it toward a narrow band, so the values mostly differ along one direction.";
     draw();
   };
   const draw = () => {

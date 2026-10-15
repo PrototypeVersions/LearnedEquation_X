@@ -136,7 +136,7 @@
     <header><span class="chnum c-word">3</span><h2>Words become numbers</h2></header>
     <p>A computer can't multiply the word "cat". So the first thing the model does is swap each word for a fixed list of numbers. Our model's whole language has eight words:</p>
     <p class="tiles" data-widget="vocab"></p>
-    <p>The period counts as a word. It's how the model ends a sentence, and it's always written with a space before it, like the others.</p>
+    <p>The period counts as a word too. It's how the model ends a sentence.</p>
     <p>Each word gets two numbers. Two numbers are exactly what you need to mark a point on a flat plane (across, then up), so every word in the language is a point. These lists are called the words' <strong>embeddings</strong>.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="embed"></div></div>
@@ -252,7 +252,7 @@
   </div>
   <div class="wide"><div class="widget" data-widget="output"></div></div>
   <div class="col">
-    <p>For "cat chases the", \(r\) points almost exactly along <span class="tile">dog</span>'s arrow, so dog wins with a probability above 99.9%. Switch phrases and watch \(r\) swing toward a different word's arrow. After "the cat", \(r\) lands in a region where the four verbs' arrows all score about equally, which is why the model spreads its bets across them.</p>
+    <p>For "cat chases the", \(r\) is long and points closer to <span class="tile">dog</span>'s arrow than to any other, so dog's score beats the rest by a wide margin and its probability comes out above 99.9%. Switch phrases and watch \(r\) swing toward a different word's arrow. After "the cat", \(r\) lands in a region where the four verbs' arrows all score about equally, which is why the model spreads its bets across them.</p>
   </div>
 </section>
 
@@ -415,7 +415,7 @@
     </div>
     <div class="possibility">
       <h4>The equation is essentially the shortest faithful description</h4>
-      <p>A basic result from the theory of information says that most long lists of numbers have no description much shorter than the list itself. There simply aren't enough short descriptions to go around. A trained network isn't a random list. It was fitted to highly structured data, and structure in the data should leave structure in the numbers. But that structure could be spread thinly across many numbers at once (researchers have shown models storing more features than they have dimensions, overlapping them in "superposition"; Elhage and colleagues, 2022). If so, any short set of rules would be a lossy summary: true for typical cases, silent or wrong at the edges, exactly like Tinyspeak's rules on our 553 strange inputs.</p>
+      <p>A basic result from the theory of information says that most long lists of numbers have no description much shorter than the list itself. There simply aren't enough short descriptions to go around. A trained network isn't a random list. It was fitted to highly structured data, and structure in the data should leave structure in the numbers. But that structure could be spread thinly across many numbers at once (researchers have shown small models storing more features than they have dimensions, overlapping them in "superposition"; Elhage and colleagues, 2022). If so, any short set of rules would be a lossy summary: true for typical cases, silent or wrong at the edges, exactly like Tinyspeak's rules on our 553 strange inputs.</p>
     </div>
 
     <h3>Why the question is hard to settle</h3>
