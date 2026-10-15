@@ -467,7 +467,8 @@
         <tr><td>Context window</td><td>3 words</td><td>Tens of thousands to millions of tokens</td></tr>
         <tr><td>Attention per layer</td><td>1 head</td><td>Dozens of heads side by side</td></tr>
         <tr><td>Layers</td><td>1</td><td>Dozens to over a hundred, stacked</td></tr>
-        <tr><td>Other parts</td><td>None</td><td>A small neural network after each attention step, normalization, and information about word order</td></tr>
+        <tr><td>Feed-forward networks</td><td>None</td><td>One after every attention step: two more large matrix multiplications with a simple bend between them, applied to each word on its own. Together they hold most of the model's numbers</td></tr>
+        <tr><td>Other parts</td><td>None</td><td>Normalization (rescaling the numbers to keep them in a steady range) and information about word order</td></tr>
         <tr><td>Adjustable numbers \(\theta\)</td><td>44</td><td>Billions to trillions</td></tr>
       </tbody>
     </table>
