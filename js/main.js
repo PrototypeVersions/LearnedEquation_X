@@ -4,11 +4,12 @@ import * as L from "./lessons.js";
 import { playground } from "./playground.js";
 import { trainer, corpusWidget, corpus } from "./training.js";
 import { rules, strange, same } from "./deep.js";
+import { descent, onestep, blame, compare } from "./trainsteps.js";
 
 const WIDGETS = {
   hero: L.hero, heroWeights: L.heroWeights, vocab: L.vocab, fit: L.fit, embed: L.embed, Etex: L.Etex, phrase: L.phrase,
   matmul: L.matmul, transform: L.transform, dot: L.dot, softmax: L.softmax, attention: L.attention, output: L.output,
-  fullNumeric: L.fullNumeric, expanded: L.expanded, playground, corpus: corpusWidget, trainer, rules, strange, same,
+  fullNumeric: L.fullNumeric, expanded: L.expanded, playground, corpus: corpusWidget, trainer, descent, onestep, blame, compare, rules, strange, same,
 };
 
 const SYM = {

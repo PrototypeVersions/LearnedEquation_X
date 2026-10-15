@@ -220,6 +220,44 @@ export function gradient(w, data) {
   return { loss: L, grad: g };
 }
 
+// The same calculation as gradient(), for one prediction, keeping every
+// intermediate "blame" value so the page can show backpropagation step by step.
+// target: index of the word that actually came next.
+export function backwardTrace(w, ids, target) {
+  const f = forward(w, ids);
+  const { X, K, V: Vv, q, attn, r, probs } = f;
+  const n = X.length - 1;
+  const s2 = Math.sqrt(D);
+  const y = probs.map((_, t) => (t === target ? 1 : 0));
+  const dl = probs.map((p, t) => p - y[t]);                                   // blame on the 8 scores
+  const gWO = [0, 1].map((i) => dl.map((d) => r[i] * d));                     // slopes for W_O
+  const dr = [0, 1].map((i) => w.WO[i].reduce((s, o, j) => s + o * dl[j], 0)); // blame on r
+  const dz = dr.slice();                                                       // r = x_n + z
+  const dv = attn.map((a) => [a * dz[0], a * dz[1]]);                          // blame on each value
+  const da = Vv.map((v) => dot(v, dz));                                        // blame on each attention weight
+  const sa = attn.reduce((s, a, i) => s + a * da[i], 0);
+  const ds = attn.map((a, i) => a * (da[i] - sa));                             // blame on each (scaled) score
+  const dq = [0, 1].map((b) => X.reduce((s, _, i) => s + ds[i] * K[i][b] / s2, 0)); // blame on the query
+  const dk = X.map((_, i) => [ds[i] * q[0] / s2, ds[i] * q[1] / s2]);         // blame on each key
+  const outer = (a, b) => [0, 1].map((i) => [0, 1].map((j) => a[i] * b[j]));
+  const add = (A, B) => A.map((row, i) => row.map((v, j) => v + B[i][j]));
+  let gWV = [[0, 0], [0, 0]], gWK = [[0, 0], [0, 0]];
+  X.forEach((x, i) => { gWV = add(gWV, outer(x, dv[i])); gWK = add(gWK, outer(x, dk[i])); });
+  const gWQ = outer(X[n], dq);
+  const dX = X.map((_, i) => [0, 1].map((a) => w.WV[a][0] * dv[i][0] + w.WV[a][1] * dv[i][1] + w.WK[a][0] * dk[i][0] + w.WK[a][1] * dk[i][1]));
+  dX[n] = dX[n].map((v, a) => v + dr[a] + w.WQ[a][0] * dq[0] + w.WQ[a][1] * dq[1]);
+  const gE = Array.from({ length: V }, () => [0, 0]);
+  f.ctx.forEach((t, i) => { gE[t][0] += dX[i][0]; gE[t][1] += dX[i][1]; });
+  return { f, y, dl, dr, dz, dv, da, ds, dq, dk, dX, loss: -Math.log(probs[target] + 1e-12), grad: { E: gE, WQ: gWQ, WK: gWK, WV: gWV, WO: gWO } };
+}
+
+// One plain downhill step: every number moves by step size × slope, against the slope.
+export function plainStep(w, grad, lr) {
+  const o = cloneWeights(w);
+  for (const k of PARAM_NAMES) o[k] = o[k].map((row, i) => row.map((v, j) => v - lr * grad[k][i][j]));
+  return o;
+}
+
 export function randomWeights(seed, scale = 0.8) {
   const r = rng(seed);
   const w = {};
@@ -231,10 +269,12 @@ export function randomWeights(seed, scale = 0.8) {
 
 // Adam: a standard way of turning gradients into small, well-sized steps.
 export class Trainer {
-  constructor(w, data, lr = 0.05) {
+  // method: "adam" (default) or "plain" (step = lr × slope).
+  constructor(w, data, lr = 0.05, method = "adam") {
     this.w = cloneWeights(w);
     this.data = data;
     this.lr = lr;
+    this.method = method;
     this.t = 0;
     this.m = zeros();
     this.v = zeros();
@@ -246,6 +286,11 @@ export class Trainer {
       const { loss: l, grad } = gradient(this.w, this.data);
       L = l;
       this.t++;
+      if (this.method === "plain") {
+        this.w = plainStep(this.w, grad, this.lr);
+        this.history.push(l);
+        continue;
+      }
       const b1 = 0.9, b2 = 0.999;
       for (const k of PARAM_NAMES) {
         const W = this.w[k], G = grad[k], M = this.m[k], S = this.v[k];

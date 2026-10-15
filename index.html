@@ -62,8 +62,9 @@
       <li><span class="n">9</span><a href="#equation">The whole equation</a></li>
       <li><span class="n">10</span><a href="#playground">Run it yourself</a></li>
       <li><span class="n">11</span><a href="#training">Where the 44 numbers came from</a></li>
-      <li><span class="n">12</span><a href="#scale">From 44 numbers to billions</a></li>
-      <li><span class="n">13</span><a href="#question">Is the equation the best description?</a></li>
+      <li><span class="n">12</span><a href="#how-training">How training works, step by step</a></li>
+      <li><span class="n">13</span><a href="#scale">From 44 numbers to billions</a></li>
+      <li><span class="n">14</span><a href="#question">Is the equation the best description?</a></li>
     </ol>
   </nav>
 </section>
@@ -234,7 +235,7 @@
   <div class="wide"><div class="widget" data-widget="attention"></div></div>
   <div class="col">
     <p>With "cat chases the", about 99.6% of the attention lands on <span class="tile">cat</span>, so the blend is almost exactly cat's value. The last word has found the subject. Switch to "chases the cat" and the word <span class="tile">cat</span> looks back at <span class="tile">chases</span> instead: that's how it knows it's the object and the sentence should end. With ". the cat" it looks at the period and knows a verb comes next.</p>
-    <p>Now try "dog chases the". The attention splits between <span class="tile">dog</span> and <span class="tile">chases</span>, yet the result still leads to <span class="tile">cat</span>. Training found a solution that works, not the tidy one a person might have designed. That gap between "works" and "tidy" comes back in chapter 13.</p>
+    <p>Now try "dog chases the". The attention splits between <span class="tile">dog</span> and <span class="tile">chases</span>, yet the result still leads to <span class="tile">cat</span>. Training found a solution that works, not the tidy one a person might have designed. That gap between "works" and "tidy" comes back in chapter 14.</p>
     <h3>All of attention as one expression</h3>
     <p>Write the keys of all the words as rows of a table, \(\Xm\WK\). Flipping it with \({}^{\T}\) turns the keys into columns, so multiplying the query by it computes every score at once (each column gives one dot product). That gives the whole of attention in one line:</p>
     <div class="math-block">\[ \zv \;=\; \smA\!\Big(\, \xn \WQ\, (\Xm\WK)^{\T} / \rt \,\Big)\; \Xm \WV \]</div>
@@ -293,7 +294,7 @@
   </div>
   <div class="wide"><div class="widget" data-widget="expanded"></div></div>
   <div class="col">
-    <p>It's long because nothing is reused. Each attention weight is spelled out again everywhere it's needed, and the denominator of the final softmax repeats the whole calculation for all eight words. That is what "one equation" literally means. Keep its length in mind for chapter 12.</p>
+    <p>It's long because nothing is reused. Each attention weight is spelled out again everywhere it's needed, and the denominator of the final softmax repeats the whole calculation for all eight words. That is what "one equation" literally means. Keep its length in mind for chapter 13.</p>
   </div>
 </section>
 
@@ -308,7 +309,7 @@
     <p>Some things worth trying:</p>
     <ul>
       <li>Click <strong>Add the likeliest word</strong> a few times from "the". Always picking the top word makes the model repeat itself ("the dog chases the cat." forever), because nothing changes from one sentence to the next. Picking at random according to the probabilities gives variety. Real chatbots face the same choice.</li>
-      <li>Type nonsense like "dog dog dog" or "sleeps sleeps". The equation still answers, because it's a formula and formulas always produce a number. What its answers <em>mean</em> on inputs it never saw is a question for chapter 13.</li>
+      <li>Type nonsense like "dog dog dog" or "sleeps sleeps". The equation still answers, because it's a formula and formulas always produce a number. What its answers <em>mean</em> on inputs it never saw is a question for chapter 14.</li>
       <li>In the number editor, move <span class="tile">sees</span> away from <span class="tile">chases</span> by changing its embedding. Or change a single number in \(\WQ\) and watch who-chases-whom fall apart.</li>
     </ul>
   </div>
@@ -331,7 +332,7 @@
     <p>Then training is the same move as least squares, with \(\theta\) standing for all 44 numbers and \(D\) for the data:</p>
     <div class="math-block">\[ \theta^{*} \;=\; \arg\min_{\theta}\; L(\theta;\, D) \]</div>
     <p>"\(\arg\min\)" means "the choice of \(\theta\) that makes \(L\) smallest". The star marks the winner.</p>
-    <p>How do you find it without trying every possible list of 44 numbers? Start with random numbers. For each of the 44, ask: if I nudged this number up a tiny bit, would the surprise go up or down? Move every number a small step in the helpful direction. Repeat a few thousand times. (This page computes all 44 answers at once using the chain rule from calculus, a method called backpropagation, but the answer is the same as actually nudging each number.)</p>
+    <p>How do you find it without trying every possible list of 44 numbers? Start with random numbers. For each of the 44, ask: if I nudged this number up a tiny bit, would the surprise go up or down? Move every number a small step in the helpful direction. Repeat a few thousand times. (This page computes all 44 answers at once using the chain rule from calculus, a method called backpropagation, but the answer is the same as actually nudging each number. The demo below also adds a standard refinement called Adam. Chapter 12 explains both, and shows why the refinement matters.)</p>
     <p>Notice that the loss can't reach zero. The text itself flips a coin over which animal starts each sentence and rolls dice over the verb, and no model can predict a coin flip. The best possible loss for this text is <span data-fill="floor">0.455</span>.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="trainer"></div></div>
@@ -340,10 +341,78 @@
   </div>
 </section>
 
-<!-- ============================ 12 SCALE ============================ -->
+<!-- ============================ 12 HOW TRAINING WORKS ============================ -->
+<section class="chapter" id="how-training">
+  <div class="col">
+    <header><span class="chnum">12</span><h2>How training works, step by step</h2></header>
+    <p>Chapter 11 described training in one sentence: start with random numbers, then keep nudging every number a little in whichever direction lowers the surprise. This chapter takes that sentence apart. First on the straight line from chapter 1, where the whole search fits in one picture, and then on the language model, with its real numbers.</p>
+
+    <h3>Walking downhill on a line</h3>
+    <p>In chapter 1, "Find the best line" jumped straight to the answer. It could, because for straight lines there's a formula that gives the best \(a\) and \(b\) directly. For almost every other model, including every language model, no such formula exists. The best numbers have to be searched for.</p>
+    <p>To make the search easy to picture, label each line by two numbers that can be drawn as a map: its slope \(b\), and \(c\), the income it predicts for someone with 14 years of education, the middle of the data. These are the same lines as before, just labeled differently (\(a = c - 14b\)). Every point on the map below is one possible line, shaded by its total squared error. The best line sits at the bottom of the bowl, marked with a green circle.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="descent"></div></div>
+  <div class="col">
+    <p>Each step does the same two things for each number:</p>
+    <ol class="steps">
+      <li><strong>Measure the slope.</strong> Nudge the number up a tiny bit and see how much the error changes, per unit of nudge. A big positive slope means "raising this number makes things much worse"; a negative slope means raising it helps.</li>
+      <li><strong>Step against the slope.</strong> Move the number by the slope times a small, fixed amount called the <strong>step size</strong> (or learning rate), in the downhill direction.</li>
+    </ol>
+    <p>In symbols, for any adjustable number \(\theta\) and a step size \(\eta\) (the Greek letter eta):</p>
+    <div class="math-block">\[ \theta \;\leftarrow\; \theta - \eta \times \text{slope} \]</div>
+    <p>The arrow means "replace with". Steep places give big steps and gentle places give small ones, so the walk slows down by itself as it nears the bottom, where the ground is flat.</p>
+    <p>Now try the step-size slider. Small steps crawl. Larger steps get there faster, until they start overshooting: the path zigzags from one side of the valley to the other. Past about 0.025, every step lands higher up the far side than it started, and the error explodes. Notice also that the path doesn't head straight for the bottom. The bowl is much steeper in \(b\) than in \(c\), so \(b\) settles almost at once while \(c\) creeps the rest of the way. Choosing step sizes, and coping with valleys that are steep one way and shallow another, are two of the main practical problems in training.</p>
+
+    <h3>One step for the language model, with real numbers</h3>
+    <p>The language model works the same way, with 44 numbers instead of 2. A 44-dimensional bowl can't be drawn, but every step can still be computed and shown. Below, the model is at random start 1 from chapter 11, before any training. Choose a situation from the training text, measure a slope by nudging, then take a step.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="onestep"></div></div>
+  <div class="col">
+    <p>Take a step on "cat chases the → dog" alone and the probability of dog jumps, but the loss over the whole text gets slightly <em>worse</em>. The step pushed the numbers to suit one prediction at the expense of others. That's why a real step uses the <em>average</em> slope over the training text. Every prediction pulls on the 44 numbers in its own direction, and the step follows the combined pull. Try "Take one step on the whole text" a few times and watch the overall loss fall.</p>
+
+    <h3>The shortcut: predicted minus actual</h3>
+    <p>Measuring slopes by nudging costs one extra run of the whole model for every number: 44 extra runs per step here, and billions for a large model. That would make training large models impossible. The method actually used, <strong>backpropagation</strong>, gets every slope for roughly the cost of one extra run, by working backwards through the equation and reusing work along the way.</p>
+    <p>It starts from a remarkably simple fact. For the eight final scores, the slope of the surprise is just</p>
+    <div class="math-block">\[ \text{blame on word } t \;=\; \underbrace{p_t}_{\text{probability the model gave it}} \;-\; \underbrace{y_t}_{1 \text{ if it came next, else } 0} \]</div>
+    <p>So the downhill step raises the score of the word that actually came next, in proportion to how badly it was under-predicted, and lowers every other word's score in proportion to the probability it wrongly took. Everything else in training follows from passing this blame backwards through the equation, one step at a time, in the reverse of the order the prediction was computed. At each stage the rule comes from the chain rule of calculus, and the pattern is always the same: the slope for a matrix's number is <em>what flowed into it</em> times <em>the blame that came out of it</em>.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="blame"></div></div>
+  <div class="col">
+    <details class="more">
+      <summary>Show the math for every backward step</summary>
+      <p>Write \(\delta\) (delta) for "blame on". Going backwards from the surprise \(-\log p_{\text{target}}\), with \(y\) the actual next word written as eight 0s and a 1:</p>
+      <div class="math-block">\[ \begin{aligned}
+        \delta(\text{scores}) &= p - y \\
+        \text{slope}(\WO) &= r^{\T}\,\delta(\text{scores}), \qquad \delta(r) = \delta(\text{scores})\,\WO^{\T} \\
+        \delta(\zv) &= \delta(r), \qquad \delta(\xn) \mathrel{+}= \delta(r) \\
+        \delta(\vv_j) &= \av_j\,\delta(\zv), \qquad \delta(\av_j) = \vv_j \cdot \delta(\zv) \\
+        \delta(s_j) &= \av_j\Big(\delta(\av_j) - \textstyle\sum_i \av_i\,\delta(\av_i)\Big) \\
+        \delta(\qv) &= \textstyle\sum_j \delta(s_j)\,\kv_j / \sqrt{2}, \qquad \delta(\kv_j) = \delta(s_j)\,\qv / \sqrt{2} \\
+        \text{slope}(\WV) &= \textstyle\sum_j x_j^{\T}\,\delta(\vv_j), \quad \text{slope}(\WK) = \textstyle\sum_j x_j^{\T}\,\delta(\kv_j), \quad \text{slope}(\WQ) = \xn^{\T}\,\delta(\qv) \\
+        \delta(x_j) &\mathrel{+}= \delta(\vv_j)\,\WV^{\T} + \delta(\kv_j)\,\WK^{\T}, \qquad \delta(\xn) \mathrel{+}= \delta(\qv)\,\WQ^{\T} \\
+        \text{slope}(\Ev\text{ row for word } w) &= \text{sum of } \delta(x_j) \text{ over the positions where } w \text{ appears}
+      \end{aligned} \]</div>
+      <p>Here \(s_j\) are the scaled attention scores. "\(\mathrel{+}=\)" means "add to what's already there", because some numbers are used along several paths and collect blame from each. The slope over the whole text is the average of these over every prediction in it. The code that runs this page does exactly these steps (it's in <a href="js/model.js">js/model.js</a>).</p>
+    </details>
+
+    <h3>What real training adds</h3>
+    <p>Plain downhill steps are the heart of it, but on their own they often stall. Here are 3,000 plain steps from random start 1, side by side with the method the demo in chapter 11 actually uses:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="compare"></div></div>
+  <div class="col">
+    <ul>
+      <li><strong>Adam.</strong> The demo in chapter 11 doesn't step by exactly step size × slope. It uses Adam, a standard refinement that does two things. It keeps a running average of each number's recent slopes, so steps carry some momentum through flat or bumpy stretches. And it scales each number's step by how large that number's slopes have typically been, so every number moves at a sensible pace even when the valley is steep one way and shallow another, like the line's bowl. With plain steps, the same start stalls well above the best possible loss; with Adam it reaches the bottom. Almost all large models are trained with Adam or a close relative.</li>
+      <li><strong>Batches.</strong> Our demos average the slope over the whole training text at every step. That's affordable here, because the text contains only 31 different situations. Real training texts have trillions of words, so each step instead averages over a random handful of examples, called a batch. The result is a noisy estimate of the true slope, but it's far cheaper, and the noise averages out over many steps.</li>
+      <li><strong>Scale.</strong> A large model takes hundreds of thousands of steps, each one adjusting billions of numbers at once, spread across thousands of chips running for weeks. The rule in each step is the one on this page.</li>
+    </ul>
+    <p>Notice what that means. The rule that produced our 44 numbers is short, fully specified and completely understood: keep stepping downhill on surprise. Everything about the numbers follows from that rule, the training text and the random start. Yet knowing the rule doesn't tell you what the resulting equation does, any more than knowing how evolution works tells you how a particular animal works. That gap is the subject of chapter 14.</p>
+  </div>
+</section>
+
+<!-- ============================ 13 SCALE ============================ -->
 <section class="chapter" id="scale">
   <div class="col">
-    <header><span class="chnum">12</span><h2>From 44 numbers to billions</h2></header>
+    <header><span class="chnum">13</span><h2>From 44 numbers to billions</h2></header>
     <p>Real language models are built from the same pieces, multiplied enormously:</p>
     <table class="compare">
       <thead><tr><th></th><th>This page</th><th>A large modern model</th></tr></thead>
@@ -368,7 +437,7 @@
 <!-- ============================ 13 QUESTION ============================ -->
 <section class="chapter" id="question">
   <div class="col">
-    <header><span class="chnum">13</span><h2>Is the equation the best description there is?</h2></header>
+    <header><span class="chnum">14</span><h2>Is the equation the best description there is?</h2></header>
     <p class="sub">We now have the complete equation of a language model. Do we understand it?</p>
 
     <h3>Two kinds of knowing</h3>
