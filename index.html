@@ -246,7 +246,7 @@
     <p>Attention has produced \(\zv\), two numbers summarizing what the last word found by looking back. Three short steps turn that into a prediction.</p>
     <ol class="steps">
       <li><strong>Add the word back in.</strong> \(r = \xn + \zv\). Attention's findings are added on top of what the last word already was, so neither is lost. Real models do this everywhere; it's called a <em>residual connection</em>.</li>
-      <li><strong>Score every word in the language.</strong> Multiply \(r\) by the 2×8 matrix \(\WO\). Each of its eight columns is an arrow belonging to one word, and each score is the dot product of \(r\) with that word's arrow. Whichever word's arrow points most along \(r\) gets the top score.</li>
+      <li><strong>Score every word in the language.</strong> Multiply \(r\) by the 2×8 matrix \(\WO\). Each of its eight columns is an arrow belonging to one word, and each score is the dot product of \(r\) with that word's arrow. As in chapter 5, a word scores high when its arrow points the same way as \(r\) <em>and</em> when its arrow is long. Near the top, small differences in direction barely matter, so a longer arrow can beat one that is better aimed.</li>
       <li><strong>Softmax</strong> the eight scores into eight probabilities.</li>
     </ol>
   </div>

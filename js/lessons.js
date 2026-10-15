@@ -474,7 +474,18 @@ export function output(root) {
     const order = [...f.probs.keys()].sort((a, b) => f.probs[b] - f.probs[a]);
     const tb = h("table", { class: "dtable" }, h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r c-out" }, "score r · column"), h("th", { class: "r" }, "probability"))),
       h("tbody", {}, order.map((t) => h("tr", {}, h("td", {}, tile(t)), h("td", { class: "r num" }, fmt(f.logits[t])), h("td", { class: "r num" }, pct(f.probs[t]))))));
-    right.append(tb, h("p", { class: "w-help", style: { marginTop: "10px" } }, `Top prediction after “${f.ctx.map((t) => VOCAB[t]).join(" ")}”: ${VOCAB[top]}.`));
+    // A dot product rewards length as well as direction: say so when they disagree.
+    const ang = (v) => Math.atan2(v[1], v[0]);
+    const off = cols.map((v) => { let d = Math.abs(ang(v) - ang(f.r)) * 180 / Math.PI; return d > 180 ? 360 - d : d; });
+    const lens = cols.map((v) => Math.hypot(...v));
+    const closest = off.indexOf(Math.min(...off));
+    const note = h("p", { class: "w-help", style: { marginTop: "10px" } }, `Top prediction after “${f.ctx.map((t) => VOCAB[t]).join(" ")}”: “${VOCAB[top]}”. `);
+    if (closest !== top) {
+      note.append(`Its arrow is ${fmt(off[top], 0)}° away from r's direction, while the arrow for “${VOCAB[closest]}” is only ${fmt(off[closest], 0)}° away. But the “${VOCAB[top]}” arrow is longer (${fmt(lens[top], 1)} vs ${fmt(lens[closest], 1)}), and a dot product rewards length as well as direction: score = length of r × length of arrow × how well they line up.`);
+    } else {
+      note.append(`Its arrow points closer to r's direction than any other word's (${fmt(off[top], 0)}° away).`);
+    }
+    right.append(tb, note);
   };
   lessonCtx.sub(draw);
   onScheme(() => draw(lessonCtx.get()));
