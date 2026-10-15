@@ -31,7 +31,7 @@ export function descent(root) {
   const bReset = h("button", { class: "ghost" }, "Start over");
   const read = h("div");
   root.append(
-    h("p", { class: "w-title" }, "Every possible line, as a map"),
+    h("p", { class: "w-title" }, "Back to chapter 1's line: every possible line, as a map"),
     h("p", { class: "w-help" }, "Each ring joins lines with the same error, like contour lines on a hiking map; the numbers on the rings are that error. Click anywhere on the map to start from that line, then take steps."),
     h("div", { class: "w-grid two" },
       h("div", {}, svg, h("div", { class: "slider", style: { marginTop: "10px" } }, h("span", { class: "w-label" }, "Step size"), slider, lrOut), h("div", { class: "w-row" }, b1, b10, bReset)),
@@ -56,7 +56,7 @@ export function descent(root) {
     for (let v = 20; v <= 60; v += 10) svg.append(s("text", { x: X(v), y: Ht - pb + 16, "text-anchor": "middle", class: "ticklabel" }, v));
     for (let v = 0; v <= 8; v += 2) svg.append(s("text", { x: pl - 6, y: Y(v) + 4, "text-anchor": "end", class: "ticklabel" }, v));
     svg.append(s("text", { x: (pl + Wd - pr) / 2, y: Ht - 4, "text-anchor": "middle", class: "ticklabel" }, "c: income the line predicts at 14 years"));
-    svg.append(s("text", { x: 12, y: Y(3.5), "text-anchor": "middle", class: "ticklabel", transform: `rotate(-90 12 ${Y(3.5)})` }, "b: slope"));
+    svg.append(s("text", { x: 12, y: Y(3.5), "text-anchor": "middle", class: "ticklabel", transform: `rotate(-90 12 ${Y(3.5)})` }, "b: climb per year"));
     svg.append(s("circle", { cx: X(BEST.c), cy: Y(BEST.b), r: 4, fill: "none", stroke: c.out, "stroke-width": 2 }));
     const clip = (v, a, b) => Math.max(a, Math.min(b, v));
     if (path.length > 1) svg.append(s("polyline", { "clip-path": "url(#descentClip)", points: path.map(([cc, bb]) => `${X(clip(cc, cmin - 50, cmax + 50))},${Y(clip(bb, bmin - 20, bmax + 20))}`).join(" "), fill: "none", stroke: c.attn, "stroke-width": 2, "stroke-linejoin": "round" }));
@@ -82,7 +82,8 @@ export function descent(root) {
         h("p", { class: "w-help", style: { margin: "8px 0 2px" } }, "How the last step was worked out:"),
         h("p", { class: "out-line" }, texEl(`\\text{slope in } c:\\ \\frac{\\text{error}(c{+}0.001) - \\text{error}(c)}{0.001} = \\frac{${fmtTex(err(c0 + 0.001, b0), 3)} - ${fmtTex(E0, 3)}}{0.001} \\approx ${fmtTex(sc, 1)}`)),
         h("p", { class: "out-line" }, texEl(`c \\leftarrow ${fmtTex(c0, 2)} - ${fmtTex(lr, 3)} \\times (${fmtTex(sc, 1)}) = ${fmtTex(st.c, 2)}`)),
-        h("p", { class: "out-line" }, texEl(`\\text{slope in } b \\approx ${fmtTex(sb, 1)},\\qquad b \\leftarrow ${fmtTex(b0, 2)} - ${fmtTex(lr, 3)} \\times (${fmtTex(sb, 1)}) = ${fmtTex(st.b, 2)}`)));
+        h("p", { class: "out-line" }, texEl(`\\text{slope in } b \\approx ${fmtTex(sb, 1)},\\qquad b \\leftarrow ${fmtTex(b0, 2)} - ${fmtTex(lr, 3)} \\times (${fmtTex(sb, 1)}) = ${fmtTex(st.b, 2)}`)),
+        h("p", { class: "w-help", style: { margin: "8px 0 0" } }, "Reading it: error(c) is the total squared error of the line before this step. error(c + 0.001) is the error after nudging c up by a tiny 0.001, keeping b the same. The change divided by 0.001 is the slope: how fast the error changes as c rises. The arrow ← means “replace with”: c moves against the slope, by the step size times the slope. The slope in b is found the same way, by nudging b instead."));
     } else if (!last) {
       read.append(h("p", { class: "w-help" }, "Press “Take one step” to see the arithmetic."));
     }
