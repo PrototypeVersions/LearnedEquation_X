@@ -1,6 +1,6 @@
 // Widgets for the hero and chapters 1–9.
 import * as M from "./model.js";
-import { h, s, fmt, fmtTex, pct, tex, texEl, matTex, vecTex, matHTML, tile, bars, plane, arrow, COLORS, onScheme, draggable, store, phrasePicker } from "./ui.js";
+import { h, s, fmt, fmtTex, pct, sci, probText, tex, texEl, matTex, vecTex, matHTML, tile, bars, plane, arrow, COLORS, onScheme, draggable, store, phrasePicker } from "./ui.js";
 
 const { VOCAB, TRAINED: W } = M;
 const reduceMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -391,7 +391,7 @@ export function softmax(root) {
     unshift.disabled = Math.min(...z) - 5 < ZMIN;
     bars(barBox, words.map((t, k) => ({ label: VOCAB[t], p: p[k] })));
     tbl.innerHTML = "";
-    const big = (x) => (x >= 1e4 ? x.toExponential(2).replace("e+", "×10^") : fmt(x, x < 1 ? 3 : 2));
+    const big = (x) => (x >= 1e4 ? sci(x, 2) : fmt(x, x < 1 ? 3 : 2));
     tbl.append(h("table", { class: "dtable", style: { marginTop: "14px" } },
       h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r" }, "score z"), h("th", { class: "r" }, "step 1: e^z"), h("th", { class: "r" }, "step 2: e^z ÷ total"))),
       h("tbody", {}, words.map((t, k) => h("tr", {}, h("td", {}, tile(t)), h("td", { class: "r num" }, fmt(z[k], 1)), h("td", { class: "r num" }, big(e[k])), h("td", { class: "r num" }, fmt(p[k], 3)))),
@@ -532,17 +532,24 @@ export function expanded(root) {
   const modeSel = h("select", { "aria-label": "Show input as" }, h("option", { value: "num" }, "this phrase's numbers"), h("option", { value: "sym" }, "symbols x₁₁, x₁₂, …"));
   modeSel.value = mode;
   const info = h("p", { class: "status" });
+  const value = h("p", { class: "out-line" });
   const box = h("div", { class: "expanded", tabindex: 0, "aria-label": "The fully expanded formula" });
   root.append(h("p", { class: "w-title" }, "One word's probability, fully written out"), picker,
-    h("div", { class: "w-row" }, h("span", { class: "w-label" }, "Probability of"), tsel, h("span", { class: "w-label" }, "Write the input as"), modeSel), info, box);
+    h("div", { class: "w-row" }, h("span", { class: "w-label" }, "Probability of"), tsel, h("span", { class: "w-label" }, "Write the input as"), modeSel), value, info, box);
   const draw = () => {
     const ids = st.get().slice(-3);
     const str = M.expandedFormula(W, ids.length, target, { symbolic: mode === "sym", ids });
     box.textContent = str;
-    const p = M.forward(W, ids).probs[target];
-    info.innerHTML = "";
-    info.append(`${str.length.toLocaleString()} characters for a ${ids.length}-word input. `,
-      mode === "num" ? `Worked out, it equals ${p < 0.0001 ? p.toExponential(2) : fmt(p, 4)}: the same answer the matrix version gives.` : "Swap in the numbers of any phrase and it gives that phrase's answer.");
+    const probs = M.forward(W, ids).probs, p = probs[target], top = M.argmax(probs);
+    const phrase = ids.map((t) => VOCAB[t]).join(" "), q = (t) => `“${VOCAB[t]}”`;
+    value.innerHTML = "";
+    if (mode === "num") {
+      value.append(`Worked out, it equals `, probText(p), `: the same answer the matrix version gives. `,
+        top === target ? `After “${phrase}”, ${q(target)} is the model's top choice.` : `After “${phrase}”, the model's top choice is ${q(top)} (${pct(probs[top])}), so ${q(target)} gets ${p < 0.01 ? "almost nothing" : "less"}.`);
+    } else {
+      value.append("Put in the two numbers of each word of any phrase, and it gives that phrase's answer.");
+    }
+    info.textContent = `${str.length.toLocaleString()} characters for a ${ids.length}-word input; scroll the box to see all of it. The whole thing has the shape exp(score of ${q(target)}) ÷ (exp(score of “the”) + exp(score of “cat”) + …, one term for each of the eight words), with every score spelled out in full.`;
   };
   st.sub(draw);
   tsel.addEventListener("change", () => { target = +tsel.value; draw(); });

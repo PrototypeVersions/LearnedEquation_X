@@ -34,6 +34,26 @@ export function fmt(v, d = 2) {
   if (/^-0\.?0*$/.test(t)) t = t.slice(1);
   return t.replace("-", "−");
 }
+// A very small or very large number as "6.59 × 10⁻²⁰" (never the computer's "6.59e-20").
+export function sci(x, digits = 2) {
+  if (x === 0 || !isFinite(x)) return h("span", { class: "w-num" }, x === 0 ? "0" : "∞");
+  let e = Math.floor(Math.log10(Math.abs(x)));
+  let m = x / 10 ** e;
+  if (Math.abs(+m.toFixed(digits)) >= 10) { m /= 10; e += 1; }
+  return h("span", { class: "w-num", html: `${m.toFixed(digits).replace("-", "−")} × 10<sup>${String(e).replace("-", "−")}</sup>` });
+}
+// A probability in plain terms; tiny ones are written out in full where that's readable.
+export function probText(p) {
+  const fine = (q) => (q >= 0.01 && q <= 0.99 ? pct(q) : `${(q * 100).toFixed(2)}%`);
+  if (p >= 0.0001) return h("span", { class: "w-num" }, `${fmt(p, 4)} (${fine(p)})`);
+  const e = Math.floor(Math.log10(p));
+  const out = h("span");
+  if (e >= -30) out.append(h("span", { class: "w-num" }, p.toFixed(-e + 2)), " (that is, ", sci(p), ")");
+  else out.append(sci(p));
+  out.append(", essentially zero");
+  return out;
+}
+
 export const pct = (p) => (p >= 0.9995 ? "100%" : p < 0.0005 ? "0%" : p < 0.01 || p > 0.99 ? (p * 100).toFixed(1) + "%" : Math.round(p * 100) + "%");
 export const fmtTex = (v, d = 2) => {
   let t = Number(v).toFixed(d);

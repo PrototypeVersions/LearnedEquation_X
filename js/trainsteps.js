@@ -1,6 +1,6 @@
 // Chapter 12: how training works, step by step.
 import * as M from "./model.js";
-import { h, s, fmt, fmtTex, pct, tex, texEl, vecTex, tile, COLORS, onScheme, store } from "./ui.js";
+import { h, s, fmt, fmtTex, pct, sci, tex, texEl, vecTex, tile, COLORS, onScheme, store } from "./ui.js";
 import { corpus } from "./training.js";
 
 const { VOCAB, INDEX: I } = M;
@@ -278,7 +278,7 @@ export function blame(root) {
       }
     }
     check.innerHTML = "";
-    check.append(`Collected up, these give all 44 slopes. Checked against nudging every number one at a time (88 extra runs of the model), the largest difference is ${worst.toExponential(1)}: the same answers, from one backward pass.`);
+    check.append("Collected up, these give all 44 slopes. Checked against nudging every number one at a time (88 extra runs of the model), the largest difference is ", sci(worst, 1), ": the same answers, from one backward pass.");
   };
   stepState.sub(draw);
 }

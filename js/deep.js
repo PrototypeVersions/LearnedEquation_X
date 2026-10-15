@@ -1,6 +1,6 @@
 // Chapter 13: rules versus the equation.
 import * as M from "./model.js";
-import { h, fmt, pct, tile, matHTML, fmtTex } from "./ui.js";
+import { h, fmt, pct, sci, tile, matHTML, fmtTex } from "./ui.js";
 import { corpus } from "./training.js";
 
 const { VOCAB, INDEX: I, TRAINED: W } = M;
@@ -118,7 +118,7 @@ export function same(root) {
     let worst = 0;
     for (const ids of all) { const p = M.forward(W, ids).probs, q = M.forward(alt, ids).probs; for (let t = 0; t < M.V; t++) worst = Math.max(worst, Math.abs(p[t] - q[t])); }
     check.innerHTML = "";
-    check.append(`Largest difference in any prediction between the two models, over all 584 possible inputs: `, h("strong", { class: "w-num" }, worst < 1e-12 ? "0" : worst.toExponential(1)), worst < 1e-9 ? " (identical, up to the last digits of rounding inside the computer)." : ".");
+    check.append(`Largest difference in any prediction between the two models, over all 584 possible inputs: `, h("strong", {}, worst < 1e-12 ? "0" : sci(worst, 1)), worst < 1e-9 ? " (identical, up to the last digits of rounding inside the computer)." : ".");
   };
   b.addEventListener("click", () => {
     // pick a random invertible 2×2 matrix A; use W_Q·A and W_K·(A⁻¹)ᵀ
