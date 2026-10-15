@@ -147,17 +147,9 @@ function eqbar() {
   const p = (cls, x, sym) => `\\htmlData{sym=${sym}}{\\htmlClass{eqp ${cls}}{${x}}}`;
   const src = `P(\\text{next}) = ${p("p-out", "\\operatorname{softmax}", "softmaxO")}\\Big(\\big(${p("p-word", "x_n", "xn")} ${p("p-res", "+", "res")} ${p("p-attn", "\\operatorname{softmax}", "softmaxA")}\\big(${p("p-word", "x_n", "xn")} ${p("p-query", "W_Q", "WQ")} (${p("p-word", "X", "X")} ${p("p-key", "W_K", "WK")})^{${p("p-key", "\\top", "T")}} ${p("p-attn", "/\\sqrt{2}", "sqrt")}\\big) ${p("p-word", "X", "X")} ${p("p-value", "W_V", "WV")}\\big) ${p("p-out", "W_O", "WO")}\\Big)`;
   window.katex.render(src, target, { ...KATEX_OPTS, macros: { ...MACROS } });
-  const sections = [...document.querySelectorAll("[data-learn]")];
   const heroEq = document.getElementById("hero-eq");
   let ticking = false;
-  const update = () => {
-    ticking = false;
-    const vh = window.innerHeight;
-    bar.classList.toggle("shown", heroEq.getBoundingClientRect().bottom < 0);
-    for (const sct of sections) {
-      if (sct.getBoundingClientRect().top < vh * 0.55) sct.dataset.learn.split(" ").forEach((k) => bar.classList.add("k-" + k));
-    }
-  };
+  const update = () => { ticking = false; bar.classList.toggle("shown", heroEq.getBoundingClientRect().bottom < 0); };
   window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
   update();
 }

@@ -19,10 +19,9 @@
 </head>
 <body>
 
-<div class="eqbar" id="eqbar" aria-label="The model's equation; each part lights up once you've learned it">
+<div class="eqbar" id="eqbar" aria-label="The model's equation; click any part to see what it is and go to its chapter">
   <div class="eqbar-inner">
     <div class="eqbar-eq" id="eqbar-eq"></div>
-    <div class="eqbar-count" id="eqbar-count"></div>
   </div>
 </div>
 
@@ -145,7 +144,7 @@
 </section>
 
 <!-- ============================ 3 WORDS ============================ -->
-<section class="chapter" id="words" data-learn="word">
+<section class="chapter" id="words">
   <div class="col">
     <header><span class="chnum c-word" data-sym="ch3">3</span><h2>Words become numbers</h2></header>
     <p>A computer can't multiply the word "cat". So the first thing the model does is swap each word for a fixed list of numbers. Our model's whole language has eight words:</p>
@@ -229,7 +228,7 @@
 </section>
 
 <!-- ============================ 7 ATTENTION ============================ -->
-<section class="chapter" id="attention" data-learn="query key value attn">
+<section class="chapter" id="attention">
   <div class="col">
     <header><span class="chnum c-attn" data-sym="ch7">7</span><h2>Attention: letting a word look back</h2></header>
     <p>Here is the problem attention solves. After "cat chases the" the next word should be <span class="tile">dog</span>. After "dog chases the" it should be <span class="tile">cat</span>. In both cases the last word is "the", so the last word alone can't decide. The model has to look back and see who is doing the chasing.</p>
@@ -257,7 +256,7 @@
 </section>
 
 <!-- ============================ 8 PREDICT ============================ -->
-<section class="chapter" id="predict" data-learn="res out">
+<section class="chapter" id="predict">
   <div class="col">
     <header><span class="chnum c-out" data-sym="ch8">8</span><h2>Making the prediction</h2></header>
     <p>Attention has produced \(\zv\), two numbers summarizing what the last word found by looking back. Three short steps turn that into a prediction.</p>

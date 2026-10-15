@@ -104,18 +104,14 @@ em { font-style: italic; }
 .eqbar-eq { overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
 .eqbar-eq::-webkit-scrollbar { display: none; }
 .eqbar-eq .katex { font-size: 1.02em; }
-.eqbar-count { font-family: var(--font-ui); font-size: 13px; color: var(--ink-3); white-space: nowrap; }
-.eqbar .eqp { color: var(--ink-3); opacity: 0.55; transition: color 0.4s, opacity 0.4s; cursor: pointer; }
-.eqbar.k-word .p-word, .eqbar.k-query .p-query, .eqbar.k-key .p-key, .eqbar.k-value .p-value,
-.eqbar.k-attn .p-attn, .eqbar.k-out .p-out, .eqbar.k-res .p-res { opacity: 1; }
-.eqbar.k-word .p-word { color: var(--c-word); }
-.eqbar.k-query .p-query { color: var(--c-query); }
-.eqbar.k-key .p-key { color: var(--c-key); }
-.eqbar.k-value .p-value { color: var(--c-value); }
-.eqbar.k-attn .p-attn { color: var(--c-attn); }
-.eqbar.k-out .p-out { color: var(--c-out); }
-.eqbar.k-res .p-res { color: var(--c-word); }
-@media (max-width: 560px) { .eqbar-count { display: none; } .eqbar-eq .katex { font-size: 0.86em; } }
+.eqbar .eqp { cursor: pointer; }
+.eqbar .p-word, .eqbar .p-res { color: var(--c-word); }
+.eqbar .p-query { color: var(--c-query); }
+.eqbar .p-key { color: var(--c-key); }
+.eqbar .p-value { color: var(--c-value); }
+.eqbar .p-attn { color: var(--c-attn); }
+.eqbar .p-out { color: var(--c-out); }
+@media (max-width: 560px) { .eqbar-eq .katex { font-size: 0.86em; } }
 
 /* ---------- concept colors in math and prose ---------- */
 .c-word { color: var(--c-word); }
