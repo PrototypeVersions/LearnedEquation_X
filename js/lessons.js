@@ -616,7 +616,7 @@ export function expanded(root) {
     } else {
       value.append("Put in the two numbers of each word of any phrase, and it gives that phrase's answer.");
     }
-    info.textContent = `${str.length.toLocaleString()} characters for a ${ids.length}-word input; scroll the box to see all of it. The whole thing has the shape exp(score of ${q(target)}) ÷ (exp(score of “the”) + exp(score of “cat”) + …, one term for each of the eight words), with every score spelled out in full.`;
+    info.textContent = `${str.length.toLocaleString()} characters for a ${ids.length}-word input; scroll the box to see all of it. exp(z) means e raised to the power z, the eᶻ from softmax. The whole thing has the shape exp(score of ${q(target)}) ÷ (exp(score of “the”) + exp(score of “cat”) + …, one term for each of the eight words), with every score spelled out in full; the attention weights inside each score are made with exp too.`;
   };
   st.sub(draw);
   tsel.addEventListener("change", () => { target = +tsel.value; draw(); });

@@ -16,6 +16,7 @@ export function playground(root) {
   const winNote = h("p", { class: "w-help", style: { margin: "6px 0 0" } });
   const barBox = h("div");
   const status = h("p", { class: "status" });
+  const picked = h("p", { class: "status", "aria-live": "polite" });
   const src = h("p", { class: "status" });
   const bLikely = h("button", { class: "primary" }, "Add the likeliest word");
   const bRandom = h("button", {}, "Add a random word (by probability)");
@@ -34,7 +35,7 @@ export function playground(root) {
     strip, winNote,
     h("div", { class: "w-grid two", style: { marginTop: "16px" } },
       h("div", {}, h("p", { class: "w-title" }, "What comes next?"), h("p", { class: "w-help" }, "Click a word to add it."), barBox),
-      h("div", {}, h("div", { class: "w-row", style: { flexDirection: "column", alignItems: "stretch" } }, bLikely, bRandom, bWrite), status, src)),
+      h("div", {}, h("div", { class: "w-row", style: { flexDirection: "column", alignItems: "stretch" } }, bLikely, bRandom, bWrite), picked, status, src)),
     traceDet, editDet);
 
   const W = () => playWeights.get();
@@ -77,9 +78,22 @@ export function playground(root) {
   };
   traceDet.addEventListener("toggle", () => { if (traceDet.open) drawTrace(M.forward(W(), ids)); });
 
-  bLikely.addEventListener("click", () => { ids.push(M.argmax(M.forward(W(), ids).probs)); draw(); });
-  bRandom.addEventListener("click", () => { ids.push(M.sampleFrom(M.forward(W(), ids).probs, Math.random)); draw(); });
-  bWrite.addEventListener("click", () => { ids = M.generate(W(), ids, 20, "sample", Math.random).seq; draw(); });
+  // Say what was picked and how likely it was, so the randomness is visible.
+  const q = (t) => `“${VOCAB[t]}”`;
+  const fine = (p) => (p > 0.99 && p < 0.9995 ? `${(p * 100).toFixed(1)}%` : pct(p));
+  bLikely.addEventListener("click", () => {
+    const pr = M.forward(W(), ids).probs, t = M.argmax(pr);
+    ids.push(t); draw();
+    picked.textContent = `Added ${q(t)}, the likeliest word (${fine(pr[t])}).`;
+  });
+  bRandom.addEventListener("click", () => {
+    const pr = M.forward(W(), ids).probs, t = M.sampleFrom(pr, Math.random), top = M.argmax(pr);
+    ids.push(t); draw();
+    picked.textContent = t === top
+      ? (pr[t] > 0.95 ? `Rolled the dice and got ${q(t)}, which had ${fine(pr[t])}: the model was nearly certain, so a random pick almost always lands here.` : `Rolled the dice and got ${q(t)} (${fine(pr[t])}), which happens to be the likeliest word this time. Try again from the same place to see the others.`)
+      : `Rolled the dice and got ${q(t)} (${fine(pr[t])}), not the likeliest word ${q(top)} (${fine(pr[top])}).`;
+  });
+  bWrite.addEventListener("click", () => { ids = M.generate(W(), ids, 20, "sample", Math.random).seq; draw(); picked.textContent = "Added 20 words, each picked at random according to its probability."; });
   bBack.addEventListener("click", () => { ids.pop(); draw(); });
   bClear.addEventListener("click", () => { ids = [I.the]; draw(); });
 
