@@ -222,13 +222,13 @@ export function onestep(root) {
 }
 
 // ------------------------------------------------------------ backpropagation with real numbers
-export function blame(root) {
+export function errorSignal(root) {
   const head = h("div");
   const barBox = h("div", { class: "scroll-x" });
   const chain = h("ol", { class: "steps", style: { fontFamily: "var(--font-ui)", fontSize: "16px" } });
   const check = h("p", { class: "status" });
-  root.append(h("p", { class: "w-title" }, "Where the blame goes"), head, barBox,
-    h("p", { class: "w-title", style: { marginTop: "16px" } }, "Passing the blame backwards"), chain, check);
+  root.append(h("p", { class: "w-title" }, "Where the error signals go"), head, barBox,
+    h("p", { class: "w-title", style: { marginTop: "16px" } }, "Passing the error signals backwards"), chain, check);
   const draw = () => {
     const { ex, w, steps } = stepState.get();
     const ids = exIds(ex), target = exTarget(ex);
@@ -236,7 +236,7 @@ export function blame(root) {
     const f = bt.f, n = f.ctx.length - 1;
     head.innerHTML = "";
     head.append(h("p", { class: "w-help" }, `Same example and model as above: “${EXAMPLES[ex][0]}” followed by “${EXAMPLES[ex][1]}”, ${steps ? `after ${steps} step${steps === 1 ? "" : "s"}` : "at the random start"}.`));
-    // predicted vs actual vs blame
+    // predicted vs actual vs error signal
     const c = COLORS();
     const tb = h("tbody");
     const mx = Math.max(...bt.dl.map(Math.abs), 1e-9);
@@ -248,7 +248,7 @@ export function blame(root) {
       tb.append(h("tr", {}, h("td", {}, tile(t, t === target ? "on" : "")), h("td", { class: "r num" }, fmt(f.probs[t], 3)), h("td", { class: "r num" }, String(bt.y[t])), h("td", { class: "r num" }, fmt(d, 3)), h("td", {}, bar)));
     });
     barBox.innerHTML = "";
-    barBox.append(h("table", { class: "dtable" }, h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r" }, "model said"), h("th", { class: "r" }, "actually"), h("th", { class: "r" }, "blame = said − actual"), h("th", {}, ""))), tb));
+    barBox.append(h("table", { class: "dtable" }, h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r" }, "model said"), h("th", { class: "r" }, "actually"), h("th", { class: "r" }, "error signal = said − actual"), h("th", {}, ""))), tb));
 
     const L = (title, src, note = "") => {
       const m = h("div", { class: "scroll-x" });
@@ -257,14 +257,14 @@ export function blame(root) {
     };
     chain.innerHTML = "";
     const v2 = (v, d = 3) => vecTex(v, d);
-    L("Scores.", `\\text{blame} = ${v2(bt.dl.map((x) => x), 2)}`, "Start with the blame on the eight scores, from the table.");
-    L("Back through W<sub>O</sub>.", `\\text{blame on } r = \\WO \\times \\text{blame} = ${v2(bt.dr)}`, "Each word's arrow passes back its share. The slope for each number in W<sub>O</sub> is the matching number of r times that word's blame.");
-    L("Split at the plus sign.", `r = \\xn + \\zv \\;\\Rightarrow\\; \\text{blame on } \\zv = \\text{blame on } \\xn\\text{ (direct path)} = ${v2(bt.dr)}`, "Adding passes the same blame to both parts.");
-    L("Into the blend.", `\\text{blame on each value} = \\av_j \\times ${v2(bt.dz)}:\\ ${bt.dv.map((v) => v2(v)).join(",\\ ")}`, "Each word's value is blamed in proportion to how much attention it got.");
-    L("Into the attention weights.", `\\text{blame on each weight} = \\vv_j \\cdot \\text{blame on } \\zv:\\ ${v2(bt.da)}`, "A weight is blamed by how much its word's value pointed along the blame.");
-    L("Back through softmax.", `\\text{blame on each score} = ${v2(bt.ds, 4)}`, "Softmax shares blame out so that the scores' blame always adds to zero.");
-    L("Into the query and keys.", `\\text{blame on } \\qv = ${v2(bt.dq)},\\quad \\text{on the keys: } ${bt.dk.map((v) => v2(v)).join(",\\ ")}`, "Each score was query · key ÷ √2, so each side is blamed by the other side's numbers.");
-    L("Into the words' numbers.", `${f.ctx.map((t, i) => `\\text{${VOCAB[t]}}: ${v2(bt.dX[i])}`).join(",\\quad ")}`, "Each word's embedding collects blame from its key, its value and, for the last word, its query and the direct path. Words that aren't in the phrase get none.");
+    L("Scores.", `\\text{error signals} = ${v2(bt.dl.map((x) => x), 2)}`, "Start with the error signals for the eight scores, from the table.");
+    L("Back through W<sub>O</sub>.", `\\text{error signal for } r = \\WO \\times \\text{error signals} = ${v2(bt.dr)}`, "Each word's arrow passes back its share. The slope for each number in W<sub>O</sub> is the matching number of r times that word's error signal.");
+    L("Split at the plus sign.", `r = \\xn + \\zv \\;\\Rightarrow\\; \\text{error signal for } \\zv = \\text{error signal for } \\xn\\text{ (direct path)} = ${v2(bt.dr)}`, "Adding passes the same error signal to both parts.");
+    L("Into the blend.", `\\text{error signal for each value} = \\av_j \\times ${v2(bt.dz)}:\\ ${bt.dv.map((v) => v2(v)).join(",\\ ")}`, "Each word's value gets a share of the error signal in proportion to how much attention it got.");
+    L("Into the attention weights.", `\\text{error signal for each weight} = \\vv_j \\cdot \\text{error signal for } \\zv:\\ ${v2(bt.da)}`, "A weight's error signal is how far its word's value points along z's error signal.");
+    L("Back through softmax.", `\\text{error signal for each score} = ${v2(bt.ds, 4)}`, "Softmax shares the error signal out so that the scores' error signals always add up to zero.");
+    L("Into the query and keys.", `\\text{error signal for } \\qv = ${v2(bt.dq)},\\quad \\text{for the keys: } ${bt.dk.map((v) => v2(v)).join(",\\ ")}`, "Each score was query · key ÷ √2, so each side's error signal is the other side's numbers times that score's error signal (÷ √2).");
+    L("Into the words' numbers.", `${f.ctx.map((t, i) => `\\text{${VOCAB[t]}}: ${v2(bt.dX[i])}`).join(",\\quad ")}`, "Each word's embedding collects error signals from its key, its value and, for the last word, its query and the direct path. Words that aren't in the phrase get none.");
 
     // check against nudging
     let worst = 0;

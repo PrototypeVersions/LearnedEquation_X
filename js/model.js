@@ -221,7 +221,7 @@ export function gradient(w, data) {
 }
 
 // The same calculation as gradient(), for one prediction, keeping every
-// intermediate "blame" value so the page can show backpropagation step by step.
+// intermediate error signal so the page can show backpropagation step by step.
 // target: index of the word that actually came next.
 export function backwardTrace(w, ids, target) {
   const f = forward(w, ids);
@@ -229,16 +229,16 @@ export function backwardTrace(w, ids, target) {
   const n = X.length - 1;
   const s2 = Math.sqrt(D);
   const y = probs.map((_, t) => (t === target ? 1 : 0));
-  const dl = probs.map((p, t) => p - y[t]);                                   // blame on the 8 scores
+  const dl = probs.map((p, t) => p - y[t]);                                   // error signal for the 8 scores
   const gWO = [0, 1].map((i) => dl.map((d) => r[i] * d));                     // slopes for W_O
-  const dr = [0, 1].map((i) => w.WO[i].reduce((s, o, j) => s + o * dl[j], 0)); // blame on r
+  const dr = [0, 1].map((i) => w.WO[i].reduce((s, o, j) => s + o * dl[j], 0)); // error signal for r
   const dz = dr.slice();                                                       // r = x_n + z
-  const dv = attn.map((a) => [a * dz[0], a * dz[1]]);                          // blame on each value
-  const da = Vv.map((v) => dot(v, dz));                                        // blame on each attention weight
+  const dv = attn.map((a) => [a * dz[0], a * dz[1]]);                          // error signal for each value
+  const da = Vv.map((v) => dot(v, dz));                                        // error signal for each attention weight
   const sa = attn.reduce((s, a, i) => s + a * da[i], 0);
-  const ds = attn.map((a, i) => a * (da[i] - sa));                             // blame on each (scaled) score
-  const dq = [0, 1].map((b) => X.reduce((s, _, i) => s + ds[i] * K[i][b] / s2, 0)); // blame on the query
-  const dk = X.map((_, i) => [ds[i] * q[0] / s2, ds[i] * q[1] / s2]);         // blame on each key
+  const ds = attn.map((a, i) => a * (da[i] - sa));                             // error signal for each (scaled) score
+  const dq = [0, 1].map((b) => X.reduce((s, _, i) => s + ds[i] * K[i][b] / s2, 0)); // error signal for the query
+  const dk = X.map((_, i) => [ds[i] * q[0] / s2, ds[i] * q[1] / s2]);         // error signal for each key
   const outer = (a, b) => [0, 1].map((i) => [0, 1].map((j) => a[i] * b[j]));
   const add = (A, B) => A.map((row, i) => row.map((v, j) => v + B[i][j]));
   let gWV = [[0, 0], [0, 0]], gWK = [[0, 0], [0, 0]];
