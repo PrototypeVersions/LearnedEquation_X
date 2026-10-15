@@ -61,13 +61,15 @@ export function hero(root) {
 
 export function heroWeights(root) {
   const row = h("div", { class: "weights-row" });
-  const fig = (el, cap) => h("figure", {}, el, h("figcaption", { html: cap }));
+  // Matrix and caption share one color and act as one item: hovering or clicking
+  // either part shows the same explanation.
+  const fig = (M, opts, cap) => h("figure", { "data-sym": opts.sym }, matHTML(M, { ...opts, sym: null }), h("figcaption", { class: opts.cls, html: cap }));
   row.append(
-    fig(matHTML(W.E, { rowLabels: VOCAB, cls: "c-word", sym: "E" }), "E: each word's two numbers"),
-    fig(matHTML(W.WQ, { cls: "c-query", sym: "WQ" }), "W<sub>Q</sub>: queries"),
-    fig(matHTML(W.WK, { cls: "c-key", sym: "WK" }), "W<sub>K</sub>: keys"),
-    fig(matHTML(W.WV, { cls: "c-value", sym: "WV" }), "W<sub>V</sub>: values"),
-    fig(matHTML(W.WO, { colLabels: VOCAB, cls: "c-out", sym: "WO" }), "W<sub>O</sub>: one column per word"),
+    fig(W.E, { rowLabels: VOCAB, cls: "c-word", sym: "E" }, "E: each word's two numbers"),
+    fig(W.WQ, { cls: "c-query", sym: "WQ" }, "W<sub>Q</sub>: queries"),
+    fig(W.WK, { cls: "c-key", sym: "WK" }, "W<sub>K</sub>: keys"),
+    fig(W.WV, { cls: "c-value", sym: "WV" }, "W<sub>V</sub>: values"),
+    fig(W.WO, { colLabels: VOCAB, cls: "c-out", sym: "WO" }, "W<sub>O</sub>: one column per word"),
   );
   root.append(row);
 }
