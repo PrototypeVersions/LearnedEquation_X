@@ -333,7 +333,7 @@
     <div class="math-block">\[ \theta^{*} \;=\; \arg\min_{\theta}\; L(\theta;\, D) \]</div>
     <p>"\(\arg\min\)" means "the choice of \(\theta\) that makes \(L\) smallest". The star marks the winner.</p>
     <p>How do you find it without trying every possible list of 44 numbers? Start with random numbers. For each of the 44, ask: if I nudged this number up a tiny bit, would the surprise go up or down? Move every number a small step in the helpful direction. Repeat a few thousand times. (This page computes all 44 answers at once using the chain rule from calculus, a method called backpropagation, but the answer is the same as actually nudging each number. The demo below also adds a standard refinement called Adam. Chapter 12 explains both, and shows why the refinement matters.)</p>
-    <p>Notice that the loss can't reach zero. The text itself flips a coin over which animal starts each sentence and rolls dice over the verb, and no model can predict a coin flip. The best possible loss for this text is <span data-fill="floor">0.455</span>.</p>
+    <p>Notice that the loss can't reach zero. The text itself flips a coin over which animal starts each sentence and rolls dice over the verb, and no model can predict a coin flip. The best possible loss for this text is <span data-fill="floor">0.455</span>. A model can get very close to that floor, but never below it.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="trainer"></div></div>
   <div class="col">

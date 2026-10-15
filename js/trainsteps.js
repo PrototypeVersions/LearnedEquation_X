@@ -329,7 +329,7 @@ export function compare(root) {
     const P = new M.Trainer(M.randomWeights(START_SEED), C.data, +lrSel.value, "plain");
     for (let k = 0; k < STEPS; k += 300) { A.step(300); P.step(300); curves = { adam: A.history, plain: P.history }; draw(); await new Promise((r) => setTimeout(r, 0)); }
     const pl_ = P.history.at(-1);
-    out.textContent = `Adam: ${fmt(A.history.at(-1), 3)} (the best possible is ${fmt(C.floor, 3)}). Plain steps of size ${lrSel.value}: ${isFinite(pl_) && pl_ < 50 ? fmt(pl_, 3) : "blew up: the steps were so large the numbers ran off to infinity"}.`;
+    out.textContent = `Adam: ${fmt(A.history.at(-1), 4)}, just above the best possible ${fmt(C.floor, 4)}. Plain steps of size ${lrSel.value}: ${isFinite(pl_) && pl_ < 50 ? fmt(pl_, 3) : "blew up: the steps were so large the numbers ran off to infinity"}.`;
     run.disabled = false;
   });
   draw();

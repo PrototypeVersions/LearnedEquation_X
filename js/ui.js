@@ -103,9 +103,9 @@ export function matTex(M, d = 1, cls = null) {
 export const vecTex = (v, d = 2) => `(${v.map((x) => fmtTex(x, d)).join(",\\ ")})`;
 
 // HTML matrix with optional row labels.
-export function matHTML(M, { d = 1, rowLabels = null, colLabels = null, cls = "", cellClass = null } = {}) {
+export function matHTML(M, { d = 1, rowLabels = null, colLabels = null, cls = "", cellClass = null, sym = null } = {}) {
   const cols = M[0].length;
-  const grid = h("div", { class: "mat " + cls + (colLabels ? " has-cl" : ""), style: { gridTemplateColumns: `repeat(${cols}, auto)` } });
+  const grid = h("div", { class: "mat " + cls + (colLabels ? " has-cl" : ""), "data-sym": sym, style: { gridTemplateColumns: `repeat(${cols}, auto)` } });
   if (colLabels) colLabels.forEach((l) => grid.append(h("span", { class: "clab" }, l)));
   M.forEach((row, i) => row.forEach((v, j) => grid.append(h("span", { class: "cell" + (cellClass ? " " + cellClass(i, j) : ""), "data-i": i, "data-j": j }, fmt(v, d)))));
   if (!rowLabels) return grid;

@@ -113,8 +113,8 @@ export function same(root) {
   const draw = () => {
     const alt = { ...M.cloneWeights(W), WQ: Wq, WK: Wk };
     left.innerHTML = ""; right.innerHTML = "";
-    left.append(h("p", { class: "w-title" }, "The trained model"), h("div", { class: "w-row" }, matHTML(W.WQ, { cls: "c-query" }), matHTML(W.WK, { cls: "c-key" })));
-    right.append(h("p", { class: "w-title" }, "A different model"), h("div", { class: "w-row" }, matHTML(Wq, { cls: "c-query", d: 2 }), matHTML(Wk, { cls: "c-key", d: 2 })));
+    left.append(h("p", { class: "w-title" }, "The trained model"), h("div", { class: "w-row" }, matHTML(W.WQ, { cls: "c-query", sym: "WQ" }), matHTML(W.WK, { cls: "c-key", sym: "WK" })));
+    right.append(h("p", { class: "w-title" }, "A different model"), h("div", { class: "w-row" }, matHTML(Wq, { cls: "c-query", d: 2, sym: "WQ" }), matHTML(Wk, { cls: "c-key", d: 2, sym: "WK" })));
     let worst = 0;
     for (const ids of all) { const p = M.forward(W, ids).probs, q = M.forward(alt, ids).probs; for (let t = 0; t < M.V; t++) worst = Math.max(worst, Math.abs(p[t] - q[t])); }
     check.innerHTML = "";

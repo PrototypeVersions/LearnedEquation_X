@@ -63,11 +63,11 @@ export function heroWeights(root) {
   const row = h("div", { class: "weights-row" });
   const fig = (el, cap) => h("figure", {}, el, h("figcaption", { html: cap }));
   row.append(
-    fig(matHTML(W.E, { rowLabels: VOCAB, cls: "c-word" }), "E: each word's two numbers"),
-    fig(matHTML(W.WQ, { cls: "c-query" }), "W<sub>Q</sub>: queries"),
-    fig(matHTML(W.WK, { cls: "c-key" }), "W<sub>K</sub>: keys"),
-    fig(matHTML(W.WV, { cls: "c-value" }), "W<sub>V</sub>: values"),
-    fig(matHTML(W.WO, { colLabels: VOCAB, cls: "c-out" }), "W<sub>O</sub>: one column per word"),
+    fig(matHTML(W.E, { rowLabels: VOCAB, cls: "c-word", sym: "E" }), "E: each word's two numbers"),
+    fig(matHTML(W.WQ, { cls: "c-query", sym: "WQ" }), "W<sub>Q</sub>: queries"),
+    fig(matHTML(W.WK, { cls: "c-key", sym: "WK" }), "W<sub>K</sub>: keys"),
+    fig(matHTML(W.WV, { cls: "c-value", sym: "WV" }), "W<sub>V</sub>: values"),
+    fig(matHTML(W.WO, { colLabels: VOCAB, cls: "c-out", sym: "WO" }), "W<sub>O</sub>: one column per word"),
   );
   root.append(h("p", { class: "w-label", style: { fontFamily: "var(--font-ui)", margin: "0 0 4px" } }, "The 44 numbers that make it this particular model:"), row);
 }
@@ -159,7 +159,7 @@ const LABEL_POS = { the: [0, -12, "middle"], cat: [10, 4, "start"], dog: [-10, 4
 export function embed(root) {
   const P = plane({ xmin: -5, xmax: 5, ymin: -3.5, ymax: 6.5, width: 460, label: "The eight words as points on a plane" });
   const right = h("div");
-  const table = matHTML(W.E, { rowLabels: VOCAB, cls: "c-word" });
+  const table = matHTML(W.E, { rowLabels: VOCAB, cls: "c-word", sym: "E" });
   const read = h("p", { class: "out-line", style: { minHeight: "2.6em" } });
   right.append(h("p", { class: "w-title" }, "Every word is a point"), h("p", { class: "w-help" }, "Point at a word, or a row of the table, to link the two."), table, read);
   root.append(h("div", { class: "w-grid two" }, h("div", {}, P.svg), right));
@@ -196,7 +196,7 @@ export function embed(root) {
 export function Etex(root) {
   const body = W.E.map((r) => r.map((v) => fmtTex(v, 1)).join(" & ")).join(" \\\\ ");
   const labels = VOCAB.map((w) => `\\leftarrow\\ \\text{${w === "." ? "." : w}}`).join(" \\\\ ");
-  tex(root, `\\Ev = \\htmlClass{c-word}{\\begin{pmatrix} ${body} \\end{pmatrix}} \\begin{matrix} ${labels} \\end{matrix}`, true);
+  tex(root, `\\Ev = \\htmlData{sym=E}{\\htmlClass{c-word}{\\begin{pmatrix} ${body} \\end{pmatrix}}} \\begin{matrix} ${labels} \\end{matrix}`, true);
 }
 
 export function phrase(root) {
@@ -517,10 +517,10 @@ function spreadLabels(L) {
 
 // ---------------------------------------------------------------- 9 the equation
 export function fullNumeric(root) {
-  const q = `\\htmlClass{c-query}{${matTex(W.WQ)}}`;
-  const k = `\\htmlClass{c-key}{${matTex(W.WK)}}`;
-  const v = `\\htmlClass{c-value}{${matTex(W.WV)}}`;
-  const o = `\\htmlClass{c-out}{${matTex(W.WO)}}`;
+  const q = `\\htmlData{sym=WQ}{\\htmlClass{c-query}{${matTex(W.WQ)}}}`;
+  const k = `\\htmlData{sym=WK}{\\htmlClass{c-key}{${matTex(W.WK)}}}`;
+  const v = `\\htmlData{sym=WV}{\\htmlClass{c-value}{${matTex(W.WV)}}}`;
+  const o = `\\htmlData{sym=WO}{\\htmlClass{c-out}{${matTex(W.WO)}}}`;
   tex(root, `\\begin{aligned} P(\\,\\text{next word}\\mid x_1,\\dots,x_n) = \\smO\\!\\Bigg( &\\Big( \\xn + \\smA\\!\\Big( \\xn ${q} \\Big(\\Xm ${k}\\Big)^{\\T}\\! / \\rt \\Big) \\\\[4pt] & \\qquad \\Xm ${v} \\Big)\\, ${o} \\Bigg) \\end{aligned}`, true);
 }
 

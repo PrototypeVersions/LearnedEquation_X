@@ -461,3 +461,7 @@ button.on { border-color: var(--c-word); color: var(--c-word); box-shadow: inset
 .steps .scroll-x .katex { font-size: 1em; }
 .heat .cells > span.glab { width: auto; min-width: 40px; height: 18px; font-family: var(--font-ui); font-size: 11px; color: var(--ink-2); background: none; }
 .heat .cells > span.glab.rl { min-width: 0; justify-content: end; padding-right: 4px; display: flex; align-items: center; }
+.tip .tip-go { margin-top: 8px; font-size: 13.5px; padding: 5px 10px; border-radius: 6px; border: 0; background: var(--paper); color: var(--ink); cursor: pointer; }
+.mat[data-sym] { cursor: help; }
+.katex .c-word, .katex .c-query, .katex .c-key, .katex .c-value, .katex .c-attn, .katex .c-out, .mat.c-word, .mat.c-query, .mat.c-key, .mat.c-value, .mat.c-attn, .mat.c-out { cursor: help; }
+.eqbar [data-sym] { cursor: pointer; }

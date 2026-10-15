@@ -101,7 +101,7 @@ export function trainer(root) {
     verdict.innerHTML = "";
     const chase = `after “cat chases the” it gives dog ${pct(pDog)}, and after “dog chases the” it gives cat ${pct(pCat)}`;
     if (gap < 0.005) {
-      verdict.append(h("span", { class: "good" }, `Reached ${fmt(L, 3)}: as good as any model can do on this text.`), ` ${ok} of ${tot} sampled sentences follow every rule, and it knows who gets chased (${chase}).`);
+      verdict.append(h("span", { class: "good" }, `Reached ${fmt(L, 4)}, just ${fmt(Math.max(gap, 0.0001), 4)} above the best possible ${fmt(C.floor, 4)}: essentially as good as any model can do on this text.`), ` ${ok} of ${tot} sampled sentences follow every rule, and it knows who gets chased (${chase}).`);
     } else if (okLoose >= 0.95 * tot && (pDog < 0.9 || pCat < 0.9)) {
       verdict.append(h("span", { class: "bad" }, `Stuck at ${fmt(L, 3)}.`), ` It learned what kind of word comes next, but not who gets chased: ${chase}. That's the one rule that needs attention to look back at the subject. Try another start.`);
     } else {
