@@ -13,7 +13,7 @@
   --grid-strong: rgba(227, 231, 238, 0.2);
 
   /* one color per part of the equation */
-  --c-word: #94a9ff;
+  --c-word: #6aa8ff;
   --c-query: #4fd0c4;
   --c-key: #f0ae4e;
   --c-value: #d996e5;
@@ -22,7 +22,7 @@
 
   --tile: #232a38;
   --tile-edge: #3a4357;
-  --focus: #94a9ff;
+  --focus: #6aa8ff;
 
   --font-body: "Literata", Georgia, "Times New Roman", serif;
   --font-ui: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
