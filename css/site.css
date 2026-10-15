@@ -132,6 +132,9 @@ em { font-style: italic; }
   margin: 0 0 22px;
   max-width: 13ch;
 }
+.hero .byline { font-family: var(--font-ui); font-size: 16px; color: var(--ink-3); margin: -8px 0 24px; letter-spacing: 0.01em; }
+.hero .byline a { color: var(--ink-2); text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
+.hero .byline a:hover { color: var(--ink); }
 .hero .lede { font-size: 1.16em; color: var(--ink-2); max-width: 34rem; }
 .demo {
   margin: 34px 0 10px;

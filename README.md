@@ -4,6 +4,8 @@ A complete tiny language model, written as a single equation with 44 numbers, an
 
 **Live site:** https://prototypeversions.github.io/LearnedEquation_X/
 
+Created by [Blake A. Myers](https://sites.google.com/view/blake-a-myers/home).
+
 ## What's on the page
 
 1. Fitting a model to data (least squares, with draggable squares)
