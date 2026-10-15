@@ -307,9 +307,18 @@ export function compare(root) {
       const path = (hist) => hist.map((v, k) => (isFinite(v) ? `${k && isFinite(hist[k - 1]) ? "L" : "M"}${X(k + 1).toFixed(1)},${Y(v).toFixed(1)}` : "")).join("");
       svg.append(s("path", { d: path(curves.plain), fill: "none", stroke: c.attn, "stroke-width": 2 }));
       svg.append(s("path", { d: path(curves.adam), fill: "none", stroke: c.word, "stroke-width": 2.4 }));
-      svg.append(s("text", { x: Wc - pr - 4, y: Y(curves.adam.at(-1)) - 8, "text-anchor": "end", class: "lbl", fill: c.word }, "Adam"));
-      const lastPlain = curves.plain.filter(isFinite).at(-1);
-      if (lastPlain != null) svg.append(s("text", { x: Wc - pr - 4, y: Y(lastPlain) - 8, "text-anchor": "end", class: "lbl", fill: c.attn }, "plain steps"));
+      // keep labels inside the chart
+      const ly = (v) => Math.max(pt + 14, Math.min(Hc - pb - 6, Y(v) - 8));
+      svg.append(s("text", { x: Wc - pr - 4, y: ly(curves.adam.at(-1)), "text-anchor": "end", class: "lbl", fill: c.word }, "Adam"));
+      let lastIn = -1;
+      curves.plain.forEach((v, k) => { if (isFinite(v) && v <= ymax) lastIn = k; });
+      if (lastIn < curves.plain.length - 1) {
+        // the plain run left the chart for good after step lastIn: mark where
+        svg.append(s("text", { x: X(lastIn + 1) + 8, y: pt + 14, "text-anchor": "start", class: "lbl", fill: c.attn }, "plain steps: blew up here"));
+      } else {
+        const lastPlain = curves.plain.filter(isFinite).at(-1);
+        if (lastPlain != null) svg.append(s("text", { x: Wc - pr - 4, y: ly(lastPlain), "text-anchor": "end", class: "lbl", fill: c.attn }, "plain steps"));
+      }
     }
     chart.innerHTML = ""; chart.append(svg);
   };
