@@ -1,27 +1,28 @@
 /* LearnedEquation — one equation that writes sentences */
 
 :root {
-  --paper: #fafbfc;
-  --ink: #1a2233;
-  --ink-2: #485267;
-  --ink-3: #737d91;
-  --rule: #dbe0e8;
-  --panel: #f0f3f7;
-  --panel-2: #e4e9f0;
-  --grid: rgba(26, 34, 51, 0.07);
-  --grid-strong: rgba(26, 34, 51, 0.18);
+  /* The site always uses this dark theme, whatever the device's setting. */
+  --paper: #12161e;
+  --ink: #e3e7ee;
+  --ink-2: #b2bacb;
+  --ink-3: #8690a3;
+  --rule: #2b3243;
+  --panel: #191e29;
+  --panel-2: #232a38;
+  --grid: rgba(227, 231, 238, 0.07);
+  --grid-strong: rgba(227, 231, 238, 0.2);
 
   /* one color per part of the equation */
-  --c-word: #3157c4;
-  --c-query: #00807a;
-  --c-key: #a35e00;
-  --c-value: #8b3a98;
-  --c-attn: #bd3150;
-  --c-out: #2b7a39;
+  --c-word: #94a9ff;
+  --c-query: #4fd0c4;
+  --c-key: #f0ae4e;
+  --c-value: #d996e5;
+  --c-attn: #ff8ea0;
+  --c-out: #86d78f;
 
-  --tile: #ffffff;
-  --tile-edge: #c9d0db;
-  --focus: #3157c4;
+  --tile: #232a38;
+  --tile-edge: #3a4357;
+  --focus: #94a9ff;
 
   --font-body: "Literata", Georgia, "Times New Roman", serif;
   --font-ui: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
@@ -30,31 +31,7 @@
   --measure: 38rem;
   --wide: 60rem;
   --gutter: 16px;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #12161e;
-    --ink: #e3e7ee;
-    --ink-2: #b2bacb;
-    --ink-3: #8690a3;
-    --rule: #2b3243;
-    --panel: #191e29;
-    --panel-2: #232a38;
-    --grid: rgba(227, 231, 238, 0.07);
-    --grid-strong: rgba(227, 231, 238, 0.2);
-    --c-word: #94a9ff;
-    --c-query: #4fd0c4;
-    --c-key: #f0ae4e;
-    --c-value: #d996e5;
-    --c-attn: #ff8ea0;
-    --c-out: #86d78f;
-    --tile: #232a38;
-    --tile-edge: #3a4357;
-    --focus: #94a9ff;
-    color-scheme: dark;
-  }
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }

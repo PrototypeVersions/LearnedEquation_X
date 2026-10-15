@@ -180,10 +180,9 @@ export const COLORS = () => ({
   attn: cssVar("--c-attn"), out: cssVar("--c-out"), ink: cssVar("--ink"), ink2: cssVar("--ink-2"), ink3: cssVar("--ink-3"), paper: cssVar("--paper"), panel2: cssVar("--panel-2"),
 });
 
-// Re-render when the color scheme flips, so SVG colors follow.
-const schemeListeners = [];
-export function onScheme(fn) { schemeListeners.push(fn); }
-window.matchMedia?.("(prefers-color-scheme: dark)").addEventListener?.("change", () => schemeListeners.forEach((f) => f()));
+// The site has one fixed (dark) theme, so colors never change after drawing.
+// Kept as a no-op so widgets that register a redraw still work.
+export function onScheme(fn) {}
 
 // Pointer dragging on an SVG plane.
 export function draggable(P, el, onMove) {
