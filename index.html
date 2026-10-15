@@ -136,7 +136,7 @@
 <!-- ============================ 3 WORDS ============================ -->
 <section class="chapter" id="words" data-learn="word">
   <div class="col">
-    <header><span class="chnum c-word">3</span><h2>Words become numbers</h2></header>
+    <header><span class="chnum c-word" data-sym="ch3">3</span><h2>Words become numbers</h2></header>
     <p>A computer can't multiply the word "cat". So the first thing the model does is swap each word for a fixed list of numbers. Our model's whole language has eight words:</p>
     <p class="tiles" data-widget="vocab"></p>
     <p>The period counts as a word too. It's how the model ends a sentence.</p>
@@ -220,16 +220,16 @@
 <!-- ============================ 7 ATTENTION ============================ -->
 <section class="chapter" id="attention" data-learn="query key value attn">
   <div class="col">
-    <header><span class="chnum c-attn">7</span><h2>Attention: letting a word look back</h2></header>
+    <header><span class="chnum c-attn" data-sym="ch7">7</span><h2>Attention: letting a word look back</h2></header>
     <p>Here is the problem attention solves. After "cat chases the" the next word should be <span class="tile">dog</span>. After "dog chases the" it should be <span class="tile">cat</span>. In both cases the last word is "the", so the last word alone can't decide. The model has to look back and see who is doing the chasing.</p>
     <p><strong>Attention</strong> lets the last word pull in information from the words before it. It takes four moves, each built from the tools in chapters 4 to 6.</p>
     <ol class="steps">
       <li><strong>Give every word three new vectors</strong> by multiplying its embedding by three matrices:
-        <span class="c-query">a <strong>query</strong></span> \(\qv = x\,\WQ\), what this word is looking for;
-        <span class="c-key">a <strong>key</strong></span> \(\kv = x\,\WK\), what a word offers to be found by;
-        and <span class="c-value">a <strong>value</strong></span> \(\vv = x\,\WV\), what a word hands over if it's chosen. Only the last word needs a query, because only it is making the prediction.</li>
+        <span class="c-query" data-sym="q">a <strong>query</strong></span> \(\qv = x\,\WQ\), what this word is looking for;
+        <span class="c-key" data-sym="k">a <strong>key</strong></span> \(\kv = x\,\WK\), what a word offers to be found by;
+        and <span class="c-value" data-sym="v">a <strong>value</strong></span> \(\vv = x\,\WV\), what a word hands over if it's chosen. Only the last word needs a query, because only it is making the prediction.</li>
       <li><strong>Score each word</strong> with the dot product of the last word's query and that word's key: \(s_j = \qv \cdot \kv_j\). Then divide by \(\rt\). (Real models divide by the square root of how many numbers each vector holds, so that scores don't grow just because vectors hold more numbers. Ours hold 2, so here it's a small, fixed shrink.)</li>
-      <li><strong>Softmax the scores</strong> into <span class="c-attn">attention weights</span> \(\av_j\) that add up to 1.</li>
+      <li><strong>Softmax the scores</strong> into <span class="c-attn" data-sym="a">attention weights</span> \(\av_j\) that add up to 1.</li>
       <li><strong>Blend the values</strong> using those weights: \(\zv = \sum_j \av_j\, \vv_j\). A word with weight 1 hands over its whole value; a word with weight 0 contributes nothing.</li>
     </ol>
     <p>The names query, key and value are metaphors. The matrices are just numbers training found. But the metaphor fits what they end up doing, as you can check below with every number shown.</p>
@@ -248,7 +248,7 @@
 <!-- ============================ 8 PREDICT ============================ -->
 <section class="chapter" id="predict" data-learn="res out">
   <div class="col">
-    <header><span class="chnum c-out">8</span><h2>Making the prediction</h2></header>
+    <header><span class="chnum c-out" data-sym="ch8">8</span><h2>Making the prediction</h2></header>
     <p>Attention has produced \(\zv\), two numbers summarizing what the last word found by looking back. Three short steps turn that into a prediction.</p>
     <ol class="steps">
       <li><strong>Add the word back in.</strong> \(r = \xn + \zv\). Attention's findings are added on top of what the last word already was, so neither is lost. Real models do this everywhere; it's called a <em>residual connection</em>.</li>

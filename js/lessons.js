@@ -350,10 +350,8 @@ export function dot(root) {
   const build = () => {
     const m = unit ? 1.4 : 4;
     P = plane({ xmin: -m, xmax: m, ymin: -m, ymax: m, width: 420, grid: unit ? 0.5 : 1, label: "Two draggable arrows" });
-    hA = s("circle", { r: 26, fill: "transparent" });
-    hB = s("circle", { r: 26, fill: "transparent" });
     arrows = s("g");
-    P.layer.append(arrows, hA, hB);
+    P.layer.append(arrows);
     // Press anywhere near a tip (not just exactly on it) and the closer tip follows the pointer.
     const toData = (ev) => {
       const r = P.svg.getBoundingClientRect();
@@ -367,6 +365,8 @@ export function dot(root) {
       if (Math.min(dA, dB) > 90) return; // too far from both tips
       ev.preventDefault();
       dragging = dA <= dB ? "a" : "b";
+      P.svg.dataset.dragging = "1";
+      document.getElementById("tip")?.classList.remove("on");
       try { P.svg.setPointerCapture(ev.pointerId); } catch {}
       P.svg.style.cursor = "grabbing";
       if (dragging === "a") a = place(x, y); else b = place(x, y);
@@ -378,7 +378,7 @@ export function dot(root) {
       if (dragging === "a") a = place(x, y); else b = place(x, y);
       draw();
     });
-    const stop = () => { dragging = null; P.svg.style.cursor = "grab"; draw(); };
+    const stop = () => { dragging = null; delete P.svg.dataset.dragging; P.svg.style.cursor = "grab"; draw(); };
     P.svg.addEventListener("pointerup", stop);
     P.svg.addEventListener("pointercancel", stop);
     plotBox.innerHTML = ""; plotBox.append(P.svg);
@@ -388,13 +388,11 @@ export function dot(root) {
     arrows.innerHTML = "";
     if (unit) arrows.append(s("circle", { cx: P.X(0), cy: P.Y(0), r: P.X(1) - P.X(0), fill: "none", stroke: c.ink3, "stroke-dasharray": "4 4", "stroke-opacity": 0.6 }));
     arrows.append(arrow(P, 0, 0, a[0], a[1], c.query, { width: 3 }), arrow(P, 0, 0, b[0], b[1], c.key, { width: 3 }));
-    arrows.append(s("text", { x: P.X(a[0]) + 10, y: P.Y(a[1]) - 8, class: "lbl", fill: c.query }, "a"), s("text", { x: P.X(b[0]) + 10, y: P.Y(b[1]) - 8, class: "lbl", fill: c.key }, "b"));
-    arrows.append(
+        arrows.append(
       s("circle", { cx: P.X(a[0]), cy: P.Y(a[1]), r: dragging === "a" ? 22 : 16, fill: c.query, "fill-opacity": dragging === "a" ? 0.28 : 0.14 }),
       s("circle", { cx: P.X(b[0]), cy: P.Y(b[1]), r: dragging === "b" ? 22 : 16, fill: c.key, "fill-opacity": dragging === "b" ? 0.28 : 0.14 }),
       s("circle", { cx: P.X(a[0]), cy: P.Y(a[1]), r: 7, fill: c.query }), s("circle", { cx: P.X(b[0]), cy: P.Y(b[1]), r: 7, fill: c.key }));
-    hA.setAttribute("cx", P.X(a[0])); hA.setAttribute("cy", P.Y(a[1]));
-    hB.setAttribute("cx", P.X(b[0])); hB.setAttribute("cy", P.Y(b[1]));
+    arrows.append(s("text", { x: P.X(a[0]) + 14, y: P.Y(a[1]) - 12, class: "lbl", fill: c.query, "data-sym": "dotArrow" }, "a"), s("text", { x: P.X(b[0]) + 14, y: P.Y(b[1]) - 12, class: "lbl", fill: c.key, "data-sym": "dotArrow" }, "b"));
     const d = a[0] * b[0] + a[1] * b[1];
     const la = Math.hypot(...a), lb = Math.hypot(...b);
     const zero = la < 1e-9 || lb < 1e-9;
@@ -488,10 +486,10 @@ export function attention(root) {
     tex(qBox, `\\qv = \\xn\\WQ = \\htmlClass{c-word}{${vecTex(f.X[n], 1)}}\\ \\htmlClass{c-query}{${matTex(W.WQ)}} = \\htmlClass{c-query}{${vecTex(f.q)}} \\qquad (\\text{query of “${VOCAB[f.ctx[n]]}”})`, true);
     tblBox.innerHTML = "";
     tblBox.append(h("table", { class: "dtable" },
-      h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r" }, "numbers x"), h("th", { class: "r c-key", html: "key k = xW<sub>K</sub>" }), h("th", { class: "r" }, "score q·k"), h("th", { class: "r" }, "÷ √2"), h("th", { class: "c-attn" }, "attention weight"))),
+      h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r" }, "numbers x"), h("th", { class: "r c-key", "data-sym": "k", html: "key k = xW<sub>K</sub>" }), h("th", { class: "r" }, "score q·k"), h("th", { class: "r" }, "÷ √2"), h("th", { class: "c-attn", "data-sym": "a" }, "attention weight"))),
       h("tbody", {}, f.ctx.map((t, j) => {
         const bar = h("div", { class: "bars", style: { gridTemplateColumns: "1fr 3.4rem" } }, h("div", { class: "bar attn" }, h("i", { style: { width: f.attn[j] * 100 + "%" } })), h("span", { class: "pct" }, pct(f.attn[j])));
-        return h("tr", {}, h("td", {}, tile(t)), h("td", { class: "r num" }, `(${fmt(f.X[j][0], 1)}, ${fmt(f.X[j][1], 1)})`), h("td", { class: "r num c-key" }, `(${fmt(f.K[j][0])}, ${fmt(f.K[j][1])})`),
+        return h("tr", {}, h("td", {}, tile(t)), h("td", { class: "r num" }, `(${fmt(f.X[j][0], 1)}, ${fmt(f.X[j][1], 1)})`), h("td", { class: "r num c-key", "data-sym": "k" }, `(${fmt(f.K[j][0])}, ${fmt(f.K[j][1])})`),
           h("td", { class: "r num" }, fmt(f.scores[j])), h("td", { class: "r num" }, fmt(f.scaled[j])), h("td", { style: { minWidth: "9rem" } }, bar));
       }))));
     // arcs
@@ -506,7 +504,7 @@ export function attention(root) {
         const hgt = j === n ? 30 : 26 + Math.abs(x0 - x1) * 0.22;
         const d = j === n ? `M${x0 - 14},${Ht - 40} C${x0 - 30},${Ht - 40 - hgt} ${x0 + 30},${Ht - 40 - hgt} ${x0 + 14},${Ht - 40}` : `M${x0},${Ht - 40} C${x0},${Ht - 40 - hgt} ${x1},${Ht - 40 - hgt} ${x1},${Ht - 40}`;
         svg.append(s("path", { d, fill: "none", stroke: c.attn, "stroke-width": 1 + 9 * w, "stroke-opacity": 0.35 + 0.6 * w, "stroke-linecap": "round" }));
-        svg.append(s("text", { x: j === n ? x0 : (x0 + x1) / 2, y: Ht - 40 - hgt * 0.75 - (1 + 9 * w) / 2 - 6, "text-anchor": "middle", class: "lbl", fill: c.attn }, pct(w)));
+        svg.append(s("text", { x: j === n ? x0 : (x0 + x1) / 2, y: Ht - 40 - hgt * 0.75 - (1 + 9 * w) / 2 - 6, "text-anchor": "middle", class: "lbl", fill: c.attn, "data-sym": "a" }, pct(w)));
       }
       svg.append(s("text", { x: xs[j], y: Ht - 16, "text-anchor": "middle", class: "lbl", "font-size": 16, "font-weight": j === n ? 700 : 400 }, VOCAB[t]));
     });
@@ -546,11 +544,11 @@ export function output(root) {
     const rl = Math.hypot(...f.r) || 1;
     labels.push({ x: P.X(f.r[0]) + (f.r[0] / rl) * 16, y: P.Y(f.r[1]) - (f.r[1] / rl) * 16 + 4, text: "r", bold: true, ink: true });
     spreadLabels(labels);
-    labels.forEach((L) => P.layer.append(s("text", { x: L.x, y: L.y, "text-anchor": "middle", class: "lbl", "font-weight": L.bold ? 700 : 400, fill: L.ink ? c.ink : c.out }, L.text)));
+    labels.forEach((L) => P.layer.append(s("text", { x: L.x, y: L.y, "text-anchor": "middle", class: "lbl", "font-weight": L.bold ? 700 : 400, fill: L.ink ? c.ink : c.out, "data-sym": L.ink ? "r" : "WOarrow" }, L.text)));
     plotBox.innerHTML = ""; plotBox.append(P.svg);
     right.innerHTML = "";
     const order = [...f.probs.keys()].sort((a, b) => f.probs[b] - f.probs[a]);
-    const tb = h("table", { class: "dtable" }, h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r c-out" }, "score r · column"), h("th", { class: "r" }, "probability"))),
+    const tb = h("table", { class: "dtable" }, h("thead", {}, h("tr", {}, h("th", {}, "word"), h("th", { class: "r c-out", "data-sym": "score" }, "score r · column"), h("th", { class: "r" }, "probability"))),
       h("tbody", {}, order.map((t) => h("tr", {}, h("td", {}, tile(t)), h("td", { class: "r num" }, fmt(f.logits[t])), h("td", { class: "r num" }, pct(f.probs[t]))))));
     // A dot product rewards length as well as direction: say so when they disagree.
     const ang = (v) => Math.atan2(v[1], v[0]);

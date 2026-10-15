@@ -113,7 +113,7 @@ export function playground(root) {
         }
         tbl.append(tr);
       }
-      grid.append(h("div", { class: "grp" }, h("h5", { class: CLS[k] }, NAMES[k]), tbl));
+      grid.append(h("div", { class: "grp" }, h("h5", { class: CLS[k], "data-sym": k }, NAMES[k]), tbl));
     }
     inputs.forEach(({ inp, k, i, j }) => inp.classList.toggle("changed", Math.abs(W()[k][i][j] - M.TRAINED[k][i][j]) > 1e-9));
   };

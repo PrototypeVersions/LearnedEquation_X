@@ -31,6 +31,13 @@ const SYM = {
   a: ["a", "Attention weights: how much the last word listens to each word. They add up to 1."],
   z: ["z", "The blend of values that attention hands back."],
   res: ["+", "Adds the last word's own numbers back in, so attention's findings sit on top of what the word already was (a residual connection)."],
+  r: ["r", "The last word's numbers plus what attention found (r = x<sub>n</sub> + z). The output step scores every word against it."],
+  score: ["Scores", "One score per word: the dot product of r with that word's arrow (its column of W<sub>O</sub>). Softmax turns the scores into probabilities."],
+  WOarrow: ["A word's arrow", "This word's column of W<sub>O</sub>, drawn as an arrow. The word's score is the dot product of r with this arrow."],
+  dotArrow: ["Arrow", "One of the two arrows you can drag. Its two numbers are listed beside the chart."],
+  ch3: ["Chapter 3", "Its number is blue because this chapter explains the blue parts of the equation: the words' own numbers, X and x<sub>n</sub>."],
+  ch7: ["Chapter 7", "Its number is red because this chapter explains attention, the red parts of the equation (with the teal, orange and purple pieces that feed it)."],
+  ch8: ["Chapter 8", "Its number is green because this chapter explains the green parts of the equation: W<sub>O</sub> and the final softmax."],
 };
 
 // Which chapter explains each symbol (used by the pinned equation).
@@ -113,7 +120,7 @@ function tooltips() {
     moveQueued = e;
     requestAnimationFrame(() => {
       const ev = moveQueued; moveQueued = null;
-      if (ev.target.closest?.("#tip")) return;
+      if (ev.target.closest?.("#tip") || ev.target.closest?.("[data-dragging]")) return;
       const el = find(ev);
       if (el) { if (el !== cur) show(el); }
       else if (cur && !pinned) hide();
