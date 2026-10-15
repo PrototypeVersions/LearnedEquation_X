@@ -87,7 +87,7 @@
     </table>
     <p>You might guess that income rises roughly in a straight line with education:</p>
     <div class="math-block">\[ y = a + b\,x \]</div>
-    <p>Here \(x\) and \(y\) stand for the two measurements, and \(a\) and \(b\) are numbers we haven't chosen yet. \(a\) sets where the line starts; \(b\) sets how steeply it climbs. Each choice of \(a\) and \(b\) gives a different line, so this formula isn't one model. It's a whole <strong>family</strong> of them: every straight line at once.</p>
+    <p>Here \(x\) and \(y\) stand for the two measurements, and \(a\) and \(b\) are numbers we haven't chosen yet. \(a\) is where the line starts: its height at \(x = 0\), the far left of the chart below. \(b\) is how much it climbs for each extra year, so changing \(b\) swings the line around that starting point. Each choice of \(a\) and \(b\) gives a different line, so this formula isn't one model. It's a whole <strong>family</strong> of them: every straight line at once.</p>
     <p><strong>Fitting</strong> means using the data to pick one member of the family. Try it: move the sliders and watch the squares. Each square's side is the gap between a person's real income and the line's prediction, so its area is that gap squared.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="fit"></div></div>
@@ -95,6 +95,7 @@
     <p>The standard choice, called <strong>least squares</strong>, picks the line that makes the total area of the squares as small as possible. Squaring does two jobs: misses above and below the line both count as positive, and big misses count much more than small ones. In symbols:</p>
     <div class="math-block">\[ \text{error}(a, b) \;=\; \sum_{i=1}^{5} \big(\, y_i - (a + b\,x_i) \,\big)^2 \]</div>
     <p>Read it like this: for each person \(i\) from 1 to 5, take their real income \(y_i\), subtract the line's prediction \(a + b\,x_i\), square the result, and the big \(\Sigma\) says add all five up. The best line is \(\hat{y} = -5.7 + 3.35\,x\). The little hat on \(\hat y\) marks it as a prediction rather than a measurement.</p>
+    <p>Notice that the best line starts below zero: taken literally, it says someone with no schooling earns −$5,700 a year. Nobody in the data had fewer than 10 years of school, so the line was never fitted anywhere near \(x = 0\). A fitted model is only trustworthy close to the data it was fitted to, a point that comes back in chapter 14.</p>
     <p>Keep three things apart, because the whole page depends on the difference:</p>
     <ul>
       <li><strong>The data</strong>: the five real observations.</li>
@@ -119,7 +120,7 @@
         <tr><td>\(E,\ W_Q,\ X\)</td><td>Capital letters are <strong>matrices</strong>: tables of numbers. \(E\) has one row per word and two columns.</td></tr>
         <tr><td>\(x\,W\)</td><td>Writing things side by side means multiply them. For matrices that has a special meaning, explained in chapter 4.</td></tr>
         <tr><td>\(\textstyle\sum_{j}\)</td><td>"Add up, over every \(j\)."</td></tr>
-        <tr><td>\(e^{z}\)</td><td>The number \(e \approx 2.718\) raised to the power \(z\). Always positive, and it grows very fast as \(z\) grows.</td></tr>
+        <tr><td>\(e^{z}\)</td><td>The number \(e \approx 2.718\) raised to the power \(z\). Always positive, and it grows very fast as \(z\) grows. Chapter 6 says more about what \(e\) is.</td></tr>
         <tr><td>\(\sqrt{2}\)</td><td>The square root of 2, about 1.414.</td></tr>
         <tr><td>\(M^{\top}\)</td><td>"Transpose": flip a table so its rows become columns.</td></tr>
         <tr><td>\(P(A \mid B)\)</td><td>The probability of \(A\), given that \(B\) is true. Read the bar as "given".</td></tr>
@@ -189,7 +190,7 @@
     <div class="math-block">\[ a \cdot b \;=\; a_1 b_1 + a_2 b_2 \]</div>
     <p>The result measures agreement, scaled by size. It's large and positive when the arrows point the same way, near zero when they're at right angles, and negative when they point apart. Longer arrows push the number further from zero, whichever sign it has. In fact the dot product always equals</p>
     <div class="math-block">\[ a \cdot b \;=\; (\text{length of } a) \times (\text{length of } b) \times (\text{alignment}) \]</div>
-    <p>where the alignment is 1 when the arrows point the same way, 0 at right angles and −1 when they point in opposite directions. (Mathematicians call it the cosine of the angle between them.) Both lengths count as much as the alignment does, which will matter in chapter 8. Drag the arrow tips:</p>
+    <p>where the alignment is 1 when the arrows point the same way, 0 at right angles and −1 when they point in opposite directions. (Mathematicians call it the cosine of the angle between them.) So it's the alignment that always stays between −1 and 1; the dot product itself is the alignment scaled up by both lengths, and can be any size. Two long arrows pointing the same way give a big number, not 1. Only when both arrows have length 1 are the dot product and the alignment the same, which the switch below lets you try. Both lengths count as much as the alignment does, and that will matter in chapter 8. Drag the arrow tips:</p>
   </div>
   <div class="wide"><div class="widget" data-widget="dot"></div></div>
   <div class="col">
@@ -208,6 +209,7 @@
     </ol>
     <div class="math-block">\[ \sm(z)_i \;=\; \frac{e^{z_i}}{\sum_j e^{z_j}} \]</div>
     <p>Read it as: the share for item \(i\) is \(e^{z_i}\) divided by the sum of \(e^{z_j}\) over every item \(j\).</p>
+    <p><strong>What is \(e\)?</strong> It's a particular number, about 2.71828, that turns up all over mathematics the way \(\pi\) does. One way to meet it: if something grows continuously at a rate of 100% per unit of time, compounding every instant, then after one unit of time it has multiplied by exactly \(e\), not by 2. You can watch it appear by computing \((1 + \tfrac{1}{n})^{n}\) for bigger and bigger \(n\): 2, then 2.25, 2.37, 2.44, and so on, creeping up toward 2.71828. Softmax could use any number bigger than 1 in its place; using 2 instead would be the same as multiplying every score by about 0.69. It uses \(e\) because \(e^{z}\) has a special property: at every point, its slope is equal to its own value. That makes the calculus of training unusually tidy, and it's part of why the error signal in chapter 12 comes out as simply "predicted minus actual".</p>
   </div>
   <div class="wide"><div class="widget" data-widget="softmax"></div></div>
   <div class="col">

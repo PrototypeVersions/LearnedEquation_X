@@ -81,37 +81,40 @@ export function fit(root) {
   const data = [[10, 28], [12, 34], [14, 41], [16, 49], [18, 54]];
   const best = { a: -5.7, b: 3.35 };
   const st = { a: 5, b: 2 };
-  const Wd = 520, Ht = 340, pl = 44, pr = 14, pt = 14, pb = 40;
-  const xmin = 8, xmax = 20, ymin = 10, ymax = 70;
+  // The chart starts at x = 0 so the line's starting height a is visible,
+  // and changing the steepness b visibly swings the line around that point.
+  const Wd = 520, Ht = 360, pl = 44, pr = 14, pt = 14, pb = 40;
+  const xmin = 0, xmax = 20, ymin = -10, ymax = 70;
   const X = (x) => pl + ((x - xmin) / (xmax - xmin)) * (Wd - pl - pr);
   const Y = (y) => Ht - pb - ((y - ymin) / (ymax - ymin)) * (Ht - pt - pb);
   const svg = s("svg", { viewBox: `0 0 ${Wd} ${Ht}`, class: "plot", role: "img", "aria-label": "Five data points with a line through them" });
+  svg.append(s("defs", {}, s("clipPath", { id: "fitClip" }, s("rect", { x: X(xmin), y: Y(ymax), width: X(xmax) - X(xmin), height: Y(ymin) - Y(ymax) }))));
   const axes = s("g");
-  for (let x = 8; x <= 20; x += 2) {
-    axes.append(s("line", { x1: X(x), x2: X(x), y1: Y(ymin), y2: Y(ymax), class: "gridline" }));
-    axes.append(s("text", { x: X(x), y: Ht - pb + 18, "text-anchor": "middle", class: "ticklabel" }, x));
+  for (let x = 0; x <= 20; x += 2) {
+    axes.append(s("line", { x1: X(x), x2: X(x), y1: Y(ymin), y2: Y(ymax), class: x === 0 ? "axis" : "gridline" }));
+    if (x % 4 === 0 || x >= 10) axes.append(s("text", { x: X(x), y: Ht - pb + 18, "text-anchor": "middle", class: "ticklabel" }, x));
   }
-  for (let y = 10; y <= 70; y += 10) {
-    axes.append(s("line", { y1: Y(y), y2: Y(y), x1: X(xmin), x2: X(xmax), class: "gridline" }));
-    axes.append(s("text", { x: pl - 8, y: Y(y) + 4, "text-anchor": "end", class: "ticklabel" }, y));
+  for (let y = -10; y <= 70; y += 10) {
+    axes.append(s("line", { y1: Y(y), y2: Y(y), x1: X(xmin), x2: X(xmax), class: y === 0 ? "axis" : "gridline" }));
+    axes.append(s("text", { x: pl - 8, y: Y(y) + 4, "text-anchor": "end", class: "ticklabel" }, fmt(y, 0)));
   }
-  axes.append(s("text", { x: X(14), y: Ht - 4, "text-anchor": "middle", class: "ticklabel" }, "years of education, x"));
-  axes.append(s("text", { x: 12, y: Y(40), "text-anchor": "middle", class: "ticklabel", transform: `rotate(-90 12 ${Y(40)})` }, "income, y"));
-  const sq = s("g"), ln = s("g"), pts = s("g");
+  axes.append(s("text", { x: X(10), y: Ht - 4, "text-anchor": "middle", class: "ticklabel" }, "years of education, x"));
+  axes.append(s("text", { x: 12, y: Y(30), "text-anchor": "middle", class: "ticklabel", transform: `rotate(-90 12 ${Y(30)})` }, "income, y"));
+  const sq = s("g", { "clip-path": "url(#fitClip)" }), ln = s("g"), pts = s("g");
   svg.append(axes, sq, ln, pts);
 
   const eq = h("div", { class: "out-line" });
   const err = h("div", { class: "out-line" });
-  const sa = h("input", { type: "range", min: -30, max: 30, step: 0.1, value: st.a, "aria-label": "a, where the line starts" });
-  const sb = h("input", { type: "range", min: 0, max: 6, step: 0.05, value: st.b, "aria-label": "b, how steeply it climbs" });
+  const sa = h("input", { type: "range", min: -10, max: 50, step: 0.1, value: st.a, "aria-label": "a, the line's height at x = 0" });
+  const sb = h("input", { type: "range", min: 0, max: 6, step: 0.05, value: st.b, "aria-label": "b, how much the line climbs per year" });
   const va = h("span", { class: "w-num" }), vb = h("span", { class: "w-num" });
   const bestBtn = h("button", { class: "primary" }, "Find the best line");
   const left = h("div", {}, svg);
   const right = h("div", {},
     h("p", { class: "w-title" }, "Fit a line by hand"),
-    h("p", { class: "w-help" }, "Make the total area of the squares as small as you can."),
-    h("div", { class: "slider" }, h("span", { class: "w-label" }, "a (start)"), sa, va),
-    h("div", { class: "slider" }, h("span", { class: "w-label" }, "b (steepness)"), sb, vb),
+    h("p", { class: "w-help" }, "Make the total area of the squares as small as you can. The hollow dot is where the line starts, at x = 0; changing the steepness swings the line around it."),
+    h("div", { class: "slider" }, h("span", { class: "w-label" }, "a (start, at x = 0)"), sa, va),
+    h("div", { class: "slider" }, h("span", { class: "w-label" }, "b (climb per year)"), sb, vb),
     eq, err, h("div", { class: "w-row" }, bestBtn));
   root.append(h("div", { class: "w-grid two" }, left, right));
 
@@ -127,10 +130,17 @@ export function fit(root) {
       const side = Math.abs(e) * pxPerY;
       const top = Math.min(Y(y), Y(yh));
       const leftEdge = X(x) + side < Wd - pr ? X(x) : X(x) - side;
-      sq.append(s("rect", { x: leftEdge, y: Math.max(pt, top), width: side, height: Math.min(side, Ht - pb - Math.max(pt, top)), fill: c.attn, "fill-opacity": 0.16, stroke: c.attn, "stroke-opacity": 0.7 }));
+      sq.append(s("rect", { x: leftEdge, y: top, width: side, height: side, fill: c.attn, "fill-opacity": 0.16, stroke: c.attn, "stroke-opacity": 0.7 }));
     }
-    ln.append(s("line", { x1: X(xmin), y1: Y(st.a + st.b * xmin), x2: X(xmax), y2: Y(st.a + st.b * xmax), stroke: c.word, "stroke-width": 2.5 }));
-    for (const [x, y] of data) pts.append(s("circle", { cx: X(x), cy: Y(y), r: 5.5, fill: c.ink }));
+    const g = s("g", { "clip-path": "url(#fitClip)" });
+    g.append(s("line", { x1: X(xmin), y1: Y(st.a + st.b * xmin), x2: X(xmax), y2: Y(st.a + st.b * xmax), stroke: c.word, "stroke-width": 2.5 }));
+    ln.append(g);
+    // the starting point (0, a)
+    if (st.a >= ymin && st.a <= ymax) {
+      ln.append(s("circle", { cx: X(0), cy: Y(st.a), r: 6, fill: c.paper, stroke: c.word, "stroke-width": 2.5 }));
+      ln.append(s("text", { x: X(0) + 10, y: Y(st.a) + (st.b > 1.5 ? 16 : -10), class: "lbl", fill: c.word }, "a"));
+    }
+    for (const [x, y] of data) pts.append(s("circle", { cx: X(x), cy: Y(y), r: 5, fill: c.ink }));
     va.textContent = fmt(st.a, 1); vb.textContent = fmt(st.b, 2);
     tex(eq, `\\hat y = ${fmtTex(st.a, 1)} + ${fmtTex(st.b, 2)}\\,x`);
     err.innerHTML = "";
@@ -327,17 +337,31 @@ export function transform(root) {
 
 // ---------------------------------------------------------------- 5 dot product
 export function dot(root) {
-  let a = [2.5, 1], b = [1, 2.5];
-  const P = plane({ xmin: -4, xmax: 4, ymin: -4, ymax: 4, width: 420, label: "Two draggable arrows" });
+  let a = [2.5, 1], b = [1, 2.5], unit = false;
+  const plotBox = h("div");
+  let P, hA, hB, arrows;
   const out = h("div");
-  root.append(h("div", { class: "w-grid two" }, h("div", {}, P.svg), h("div", {}, h("p", { class: "w-title" }, "Drag the two arrow tips"), out)));
-  const hA = s("circle", { r: 14, fill: "transparent", style: "cursor:grab" });
-  const hB = s("circle", { r: 14, fill: "transparent", style: "cursor:grab" });
-  const arrows = s("g");
-  P.layer.append(arrows, hA, hB);
+  const unitBox = h("input", { type: "checkbox", id: "dot-unit" });
+  root.append(h("div", { class: "w-grid two" }, plotBox,
+    h("div", {}, h("p", { class: "w-title" }, "Drag the two arrow tips"),
+      h("label", { class: "w-row", style: { gap: "8px", cursor: "pointer" }, for: "dot-unit" }, unitBox, "Keep both arrows at length 1"),
+      out)));
+  // the plane zooms in when both arrows are kept at length 1
+  const build = () => {
+    const m = unit ? 1.4 : 4;
+    P = plane({ xmin: -m, xmax: m, ymin: -m, ymax: m, width: 420, grid: unit ? 0.5 : 1, label: "Two draggable arrows" });
+    hA = s("circle", { r: 14, fill: "transparent", style: "cursor:grab" });
+    hB = s("circle", { r: 14, fill: "transparent", style: "cursor:grab" });
+    arrows = s("g");
+    P.layer.append(arrows, hA, hB);
+    draggable(P, hA, (x, y) => { a = place(x, y); draw(); });
+    draggable(P, hB, (x, y) => { b = place(x, y); draw(); });
+    plotBox.innerHTML = ""; plotBox.append(P.svg);
+  };
   const draw = () => {
     const c = COLORS();
     arrows.innerHTML = "";
+    if (unit) arrows.append(s("circle", { cx: P.X(0), cy: P.Y(0), r: P.X(1) - P.X(0), fill: "none", stroke: c.ink3, "stroke-dasharray": "4 4", "stroke-opacity": 0.6 }));
     arrows.append(arrow(P, 0, 0, a[0], a[1], c.query, { width: 3 }), arrow(P, 0, 0, b[0], b[1], c.key, { width: 3 }));
     arrows.append(s("text", { x: P.X(a[0]) + 10, y: P.Y(a[1]) - 8, class: "lbl", fill: c.query }, "a"), s("text", { x: P.X(b[0]) + 10, y: P.Y(b[1]) - 8, class: "lbl", fill: c.key }, "b"));
     arrows.append(s("circle", { cx: P.X(a[0]), cy: P.Y(a[1]), r: 6, fill: c.query }), s("circle", { cx: P.X(b[0]), cy: P.Y(b[1]), r: 6, fill: c.key }));
@@ -346,21 +370,38 @@ export function dot(root) {
     const d = a[0] * b[0] + a[1] * b[1];
     const la = Math.hypot(...a), lb = Math.hypot(...b);
     const zero = la < 1e-9 || lb < 1e-9;
-    const cos = zero ? 0 : d / (la * lb);
-    const verdict = zero ? "" : cos > 0.92 ? "pointing nearly the same way" : cos > 0.3 ? "pointing roughly the same way" : cos > -0.3 ? "close to right angles" : cos > -0.92 ? "pointing roughly apart" : "pointing in opposite directions";
+    const cos = zero ? 0 : Math.max(-1, Math.min(1, d / (la * lb)));
+    const deg = Math.round((Math.acos(cos) * 180) / Math.PI);
+    const verdict = zero ? "" : deg <= 3 ? "pointing the same way" : deg < 25 ? "pointing nearly the same way" : deg < 72 ? "pointing roughly the same way" : deg <= 87 ? "close to right angles" : deg <= 93 ? "at right angles" : deg <= 108 ? "close to right angles" : deg < 155 ? "pointing roughly apart" : deg < 177 ? "pointing nearly opposite ways" : "pointing in opposite directions";
+    const dd = unit ? 2 : 1;
+    const pn = (v) => (v < 0 ? `(${fmtTex(v, dd)})` : fmtTex(v, dd)); // brackets around negatives
     out.innerHTML = "";
     out.append(
-      h("p", { class: "out-line" }, texEl(`\\htmlClass{c-query}{a} = ${vecTex(a, 1)},\\quad \\htmlClass{c-key}{b} = ${vecTex(b, 1)}`)),
-      h("p", { class: "out-line" }, texEl(`\\htmlClass{c-query}{a}\\cdot \\htmlClass{c-key}{b} = ${fmtTex(a[0], 1)}\\times${fmtTex(b[0], 1)} + ${fmtTex(a[1], 1)}\\times${fmtTex(b[1], 1)}`)),
+      h("p", { class: "out-line" }, texEl(`\\htmlClass{c-query}{a} = ${vecTex(a, dd)},\\quad \\htmlClass{c-key}{b} = ${vecTex(b, dd)}`)),
+      h("p", { class: "out-line" }, texEl(`\\htmlClass{c-query}{a}\\cdot \\htmlClass{c-key}{b} = ${pn(a[0])}\\times${pn(b[0])} + ${pn(a[1])}\\times${pn(b[1])}`)),
       h("p", {}, h("span", { class: "big-num " + (d > 0.05 ? "good" : d < -0.05 ? "bad" : "") }, fmt(d, 2))),
       zero ? h("p", { class: "w-help" }, "One arrow has zero length, so the dot product is 0 whatever the direction.")
         : h("p", { class: "out-line" }, texEl(`= \\underbrace{${fmtTex(la, 2)}}_{\\text{length of } a} \\times \\underbrace{${fmtTex(lb, 2)}}_{\\text{length of } b} \\times \\underbrace{${fmtTex(cos, 2)}}_{\\text{alignment}}`)),
-      zero ? "" : h("p", { class: "w-help" }, `The arrows are ${verdict}.`));
+      zero ? "" : h("p", { class: "w-help" }, `The arrows are ${deg}° apart: ${verdict}, so the alignment is ${fmt(cos, 2)}.` +
+        (unit ? " With both lengths 1, the dot product is the alignment." : " The dot product is that alignment scaled up by both lengths, so it can be much bigger than 1.")));
   };
-  const snap = (v) => Math.max(-3.8, Math.min(3.8, Math.round(v * 2) / 2));
-  draggable(P, hA, (x, y) => { a = [snap(x), snap(y)]; draw(); });
-  draggable(P, hB, (x, y) => { b = [snap(x), snap(y)]; draw(); });
-  draw();
+  const snapGrid = (v) => Math.max(-3.5, Math.min(3.5, Math.round(v * 2) / 2));
+  const place = (x, y) => {
+    if (unit) {
+      const ang = Math.round((Math.atan2(y, x) * 180) / Math.PI / 5) * 5 * (Math.PI / 180); // 5° steps
+      return [Math.cos(ang), Math.sin(ang)].map((v) => (Math.abs(v) < 1e-12 ? 0 : v));
+    }
+    return [snapGrid(x), snapGrid(y)];
+  };
+  unitBox.addEventListener("change", () => {
+    unit = unitBox.checked;
+    if (unit) {
+      a = place(...(Math.hypot(...a) > 1e-9 ? a : [1, 0]));
+      b = place(...(Math.hypot(...b) > 1e-9 ? b : [0, 1]));
+    } else { a = [2.5, 1]; b = [1, 2.5]; }
+    build(); draw();
+  });
+  build(); draw();
   onScheme(draw);
 }
 
