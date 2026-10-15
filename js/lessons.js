@@ -506,10 +506,11 @@ export function fullNumeric(root) {
 
 export function expanded(root) {
   const st = store([I.cat, I.chases, I.the]);
-  let target = I.dog, mode = "sym";
+  let target = I.dog, mode = "num";
   const picker = phrasePicker(st, PRESETS);
   const tsel = h("select", { "aria-label": "Which next word" }); VOCAB.forEach((w, i) => tsel.append(h("option", { value: i }, w))); tsel.value = target;
-  const modeSel = h("select", { "aria-label": "Show input as" }, h("option", { value: "sym" }, "symbols x₁₁, x₁₂, …"), h("option", { value: "num" }, "this phrase's numbers"));
+  const modeSel = h("select", { "aria-label": "Show input as" }, h("option", { value: "num" }, "this phrase's numbers"), h("option", { value: "sym" }, "symbols x₁₁, x₁₂, …"));
+  modeSel.value = mode;
   const info = h("p", { class: "status" });
   const box = h("div", { class: "expanded", tabindex: 0, "aria-label": "The fully expanded formula" });
   root.append(h("p", { class: "w-title" }, "One word's probability, fully written out"), picker,

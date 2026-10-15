@@ -14,7 +14,7 @@ A complete tiny language model, written as a single equation with 44 numbers, an
 6. Softmax
 7. Attention, with every number shown
 8. Making the prediction
-9. The whole equation: compact, with all 44 numbers, and fully expanded (~11,700 characters)
+9. The whole equation: compact, with all 44 numbers, and fully expanded (~12,000 characters)
 10. A playground: type any words, generate sentences, edit the numbers
 11. Training live in the browser, from random numbers
 12. From 44 numbers to billions

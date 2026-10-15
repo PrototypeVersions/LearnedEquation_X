@@ -285,7 +285,7 @@
   <div class="col">
     <p>where \(\Xm\) is built from the rows of \(\Ev\) shown in chapter 3. Count them: 16 numbers in \(\Ev\), 4 each in \(\WQ\), \(\WK\) and \(\WV\), and 16 in \(\WO\). Forty-four numbers in all. That list is the model's \(\theta\).</p>
     <h3>Without the shorthand</h3>
-    <p>Matrices are an abbreviation. Unpack every one of them into plain multiplications and additions and you get a formula that uses nothing but numbers, \(+\), \(\times\), \(\div\) and exp( ), which means \(e\) raised to the power in the brackets. Below, \(x_{11}\) means "the first number of the first word", \(x_{12}\) "the second number of the first word", and so on. For a three-word input, the probability of a single next word is one line about 11,700 characters long:</p>
+    <p>Matrices are an abbreviation. Unpack every one of them into plain multiplications and additions and you get a formula that uses nothing but numbers, \(+\), \(\times\), \(\div\) and exp( ), which means \(e\) raised to the power in the brackets. For a three-word input, the probability of a single next word is one line about 12,000 characters long. Below it is written out with your phrase's numbers plugged in. Switch to symbols to see the version that works for any phrase, where \(x_{11}\) means "the first number of the first word", \(x_{12}\) "the second number of the first word", and so on.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="expanded"></div></div>
   <div class="col">
@@ -355,7 +355,7 @@
     </table>
     <p>Every addition is still made of multiplication, addition, exponentials and a few other ordinary functions. So the summary from chapter 9 holds at any size:</p>
     <div class="math-block">\[ P(\text{next token} \mid \text{previous tokens}) \;=\; F_{\theta^*}(\text{previous tokens}) \]</div>
-    <p>A real model is one function. In principle you could write it out the way chapter 9 did. In practice: our 44-number model already needs about 11,700 characters for one word's probability. A model with 70 billion numbers, printed at five characters per number, would fill something like 350,000 thick books <em>before writing a single plus sign</em>, and in the fully expanded formula each of those numbers would appear many times over.</p>
+    <p>A real model is one function. In principle you could write it out the way chapter 9 did. In practice: our 44-number model already needs about 12,000 characters for one word's probability. A model with 70 billion numbers, printed at five characters per number, would fill something like 350,000 thick books <em>before writing a single plus sign</em>, and in the fully expanded formula each of those numbers would appear many times over.</p>
     <p>The other thing that grows is the gap between the formula and our understanding of it. That's the subject of the last chapter.</p>
   </div>
 </section>
