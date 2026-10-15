@@ -458,3 +458,15 @@ button.ex-btn[aria-expanded="true"]::after { content: " \25B4"; }
 .ex-box p { margin: 10px 0; }
 .ex-box .math-block { margin-bottom: 0.6em; }
 .ex-box .katex { font-size: 1em; }
+
+/* matrices shown inside tooltips */
+.tip.tip-wide { max-width: min(400px, calc(100vw - 16px)); }
+.tip .tip-note { margin-top: 6px; font-size: 13px; opacity: 0.85; }
+.tip .tip-mat { margin-top: 5px; padding: 6px 8px; background: var(--paper); border-radius: 6px; display: flex; justify-content: center; }
+.tip .mat { font-size: 13.5px; gap: 2px 8px; padding: 2px 8px; }
+.tip .mat .cell { line-height: 18px; padding: 0 1px; }
+.tip .mat .clab { font-size: 10.5px; line-height: 16px; height: 18px; }
+.tip .mat.has-cl::before, .tip .mat.has-cl::after { top: 20px; }
+.tip .mat-wrap { gap: 6px; }
+.tip .row-labels { font-size: 11.5px; padding: 2px 0; }
+.tip .row-labels > div { line-height: 18px; }

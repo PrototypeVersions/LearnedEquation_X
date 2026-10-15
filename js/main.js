@@ -1,5 +1,6 @@
 // Page start-up: render math, mount widgets, run the equation bar and tooltips.
-import { KATEX_OPTS, MACROS, tex } from "./ui.js";
+import { KATEX_OPTS, MACROS, tex, matHTML } from "./ui.js";
+import { TRAINED, VOCAB } from "./model.js";
 import * as L from "./lessons.js";
 import { playground } from "./playground.js";
 import { trainer, corpusWidget, corpus } from "./training.js";
@@ -39,6 +40,15 @@ const SYM = {
   ch3: ["Chapter 3", "Its number is blue because this chapter explains the blue parts of the equation: the words' own numbers, X and x<sub>n</sub>."],
   ch7: ["Chapter 7", "Its number is red because this chapter explains attention, the red parts of the equation (with the teal, orange and purple pieces that feed it)."],
   ch8: ["Chapter 8", "Its number is green because this chapter explains the green parts of the equation: W<sub>O</sub> and the final softmax."],
+};
+
+// The five fixed matrices also show their trained numbers in the tooltip.
+const TIP_MAT = {
+  E: { cls: "c-word", rowLabels: VOCAB, note: "Its trained numbers, one row per word:" },
+  WQ: { cls: "c-query", note: "Its four trained numbers:" },
+  WK: { cls: "c-key", note: "Its four trained numbers:" },
+  WV: { cls: "c-value", note: "Its four trained numbers:" },
+  WO: { cls: "c-out", colLabels: VOCAB, note: "Its trained numbers, one column per word:" },
 };
 
 // Which chapter explains each symbol (used by the pinned equation).
@@ -98,6 +108,18 @@ function tooltips() {
     if (!d) return;
     cur = el; pinned = pin;
     tip.innerHTML = `<b>${d[0]}</b>&nbsp; ${d[1]}`;
+    // Show the matrix itself, unless the thing pointed at already shows numbers.
+    const tm = TIP_MAT[el.dataset.sym];
+    const showMat = tm && !/\d/.test(el.textContent);
+    tip.classList.toggle("tip-wide", Boolean(showMat && tm.colLabels));
+    if (showMat) {
+      const { note, ...opts } = tm;
+      tip.append(Object.assign(document.createElement("div"), { className: "tip-note", textContent: note }));
+      const box = document.createElement("div");
+      box.className = "tip-mat";
+      box.append(matHTML(TRAINED[el.dataset.sym], opts));
+      tip.append(box);
+    }
     const ch = CHAPTER[el.dataset.sym];
     if (el.closest(".eqbar") && ch) {
       tip.insertAdjacentHTML("beforeend", `<br><button class="tip-go" data-go="${CHAPTER_ID[ch]}">Go to chapter ${ch}</button>`);
@@ -105,6 +127,8 @@ function tooltips() {
     } else tip.style.pointerEvents = "none";
     tip.classList.add("on");
     const r = el.getBoundingClientRect();
+    // Measure at the far left first, so a wide tooltip isn't squeezed by where the last one sat.
+    tip.style.left = "0px"; tip.style.top = "0px";
     const tw = tip.offsetWidth, th = tip.offsetHeight;
     let x = r.left + r.width / 2 - tw / 2 + window.scrollX;
     x = Math.max(8 + window.scrollX, Math.min(x, window.scrollX + document.documentElement.clientWidth - tw - 8));
