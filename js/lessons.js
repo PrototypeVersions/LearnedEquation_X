@@ -339,23 +339,48 @@ export function transform(root) {
 export function dot(root) {
   let a = [2.5, 1], b = [1, 2.5], unit = false;
   const plotBox = h("div");
-  let P, hA, hB, arrows;
+  let P, hA, hB, arrows, dragging = null;
   const out = h("div");
   const unitBox = h("input", { type: "checkbox", id: "dot-unit" });
   root.append(h("div", { class: "w-grid two" }, plotBox,
-    h("div", {}, h("p", { class: "w-title" }, "Drag the two arrow tips"),
+    h("div", {}, h("p", { class: "w-title" }, "Drag the two arrow tips"), h("p", { class: "w-help" }, "Press anywhere near a tip; the closer one follows you."),
       h("label", { class: "w-row", style: { gap: "8px", cursor: "pointer" }, for: "dot-unit" }, unitBox, "Keep both arrows at length 1"),
       out)));
   // the plane zooms in when both arrows are kept at length 1
   const build = () => {
     const m = unit ? 1.4 : 4;
     P = plane({ xmin: -m, xmax: m, ymin: -m, ymax: m, width: 420, grid: unit ? 0.5 : 1, label: "Two draggable arrows" });
-    hA = s("circle", { r: 14, fill: "transparent", style: "cursor:grab" });
-    hB = s("circle", { r: 14, fill: "transparent", style: "cursor:grab" });
+    hA = s("circle", { r: 26, fill: "transparent" });
+    hB = s("circle", { r: 26, fill: "transparent" });
     arrows = s("g");
     P.layer.append(arrows, hA, hB);
-    draggable(P, hA, (x, y) => { a = place(x, y); draw(); });
-    draggable(P, hB, (x, y) => { b = place(x, y); draw(); });
+    // Press anywhere near a tip (not just exactly on it) and the closer tip follows the pointer.
+    const toData = (ev) => {
+      const r = P.svg.getBoundingClientRect();
+      const vx = ((ev.clientX - r.left) / r.width) * P.width, vy = ((ev.clientY - r.top) / r.height) * P.height;
+      return [vx, vy, (vx - P.pad) / P.sx + P.xmin, (P.height - P.pad - vy) / P.sx + P.ymin];
+    };
+    P.svg.style.cursor = "grab";
+    P.svg.addEventListener("pointerdown", (ev) => {
+      const [vx, vy, x, y] = toData(ev);
+      const dA = Math.hypot(vx - P.X(a[0]), vy - P.Y(a[1])), dB = Math.hypot(vx - P.X(b[0]), vy - P.Y(b[1]));
+      if (Math.min(dA, dB) > 90) return; // too far from both tips
+      ev.preventDefault();
+      dragging = dA <= dB ? "a" : "b";
+      try { P.svg.setPointerCapture(ev.pointerId); } catch {}
+      P.svg.style.cursor = "grabbing";
+      if (dragging === "a") a = place(x, y); else b = place(x, y);
+      draw();
+    });
+    P.svg.addEventListener("pointermove", (ev) => {
+      if (!dragging) return;
+      const [, , x, y] = toData(ev);
+      if (dragging === "a") a = place(x, y); else b = place(x, y);
+      draw();
+    });
+    const stop = () => { dragging = null; P.svg.style.cursor = "grab"; draw(); };
+    P.svg.addEventListener("pointerup", stop);
+    P.svg.addEventListener("pointercancel", stop);
     plotBox.innerHTML = ""; plotBox.append(P.svg);
   };
   const draw = () => {
@@ -364,7 +389,10 @@ export function dot(root) {
     if (unit) arrows.append(s("circle", { cx: P.X(0), cy: P.Y(0), r: P.X(1) - P.X(0), fill: "none", stroke: c.ink3, "stroke-dasharray": "4 4", "stroke-opacity": 0.6 }));
     arrows.append(arrow(P, 0, 0, a[0], a[1], c.query, { width: 3 }), arrow(P, 0, 0, b[0], b[1], c.key, { width: 3 }));
     arrows.append(s("text", { x: P.X(a[0]) + 10, y: P.Y(a[1]) - 8, class: "lbl", fill: c.query }, "a"), s("text", { x: P.X(b[0]) + 10, y: P.Y(b[1]) - 8, class: "lbl", fill: c.key }, "b"));
-    arrows.append(s("circle", { cx: P.X(a[0]), cy: P.Y(a[1]), r: 6, fill: c.query }), s("circle", { cx: P.X(b[0]), cy: P.Y(b[1]), r: 6, fill: c.key }));
+    arrows.append(
+      s("circle", { cx: P.X(a[0]), cy: P.Y(a[1]), r: dragging === "a" ? 22 : 16, fill: c.query, "fill-opacity": dragging === "a" ? 0.28 : 0.14 }),
+      s("circle", { cx: P.X(b[0]), cy: P.Y(b[1]), r: dragging === "b" ? 22 : 16, fill: c.key, "fill-opacity": dragging === "b" ? 0.28 : 0.14 }),
+      s("circle", { cx: P.X(a[0]), cy: P.Y(a[1]), r: 7, fill: c.query }), s("circle", { cx: P.X(b[0]), cy: P.Y(b[1]), r: 7, fill: c.key }));
     hA.setAttribute("cx", P.X(a[0])); hA.setAttribute("cy", P.Y(a[1]));
     hB.setAttribute("cx", P.X(b[0])); hB.setAttribute("cy", P.Y(b[1]));
     const d = a[0] * b[0] + a[1] * b[1];
