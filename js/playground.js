@@ -16,10 +16,10 @@ export function playground(root) {
   const winNote = h("p", { class: "w-help", style: { margin: "6px 0 0" } });
   const barBox = h("div");
   const status = h("p", { class: "status" });
-  const picked = h("p", { class: "status", "aria-live": "polite" });
+  const picked = h("p", { class: "status", "aria-live": "polite", style: { marginTop: "10px", fontWeight: "700" } });
   const src = h("p", { class: "status" });
   const bLikely = h("button", { class: "primary" }, "Add the likeliest word");
-  const bRandom = h("button", {}, "Add a random word (by probability)");
+  const bRandom = h("button", {}, "Draw a word (weighted by probability)");
   const bWrite = h("button", {}, "Write 20 words");
   const bBack = h("button", { class: "ghost" }, "Remove last word");
   const bClear = h("button", { class: "ghost" }, "Clear");
@@ -35,7 +35,7 @@ export function playground(root) {
     strip, winNote,
     h("div", { class: "w-grid two", style: { marginTop: "16px" } },
       h("div", {}, h("p", { class: "w-title" }, "What comes next?"), h("p", { class: "w-help" }, "Click a word to add it."), barBox),
-      h("div", {}, h("div", { class: "w-row", style: { flexDirection: "column", alignItems: "stretch" } }, bLikely, bRandom, bWrite), picked, status, src)),
+      h("div", {}, h("div", { class: "w-row", style: { flexDirection: "column", alignItems: "stretch" } }, bLikely, bRandom, bWrite), h("p", { class: "w-help", style: { margin: "4px 0 0" } }, "Drawing works like a raffle: each word holds tickets in proportion to its probability, so likely words usually win, but any word with tickets can."), picked, status, src)),
     traceDet, editDet);
 
   const W = () => playWeights.get();
@@ -90,10 +90,10 @@ export function playground(root) {
     const pr = M.forward(W(), ids).probs, t = M.sampleFrom(pr, Math.random), top = M.argmax(pr);
     ids.push(t); draw();
     picked.textContent = t === top
-      ? (pr[t] > 0.95 ? `Rolled the dice and got ${q(t)}, which had ${fine(pr[t])}: the model was nearly certain, so a random pick almost always lands here.` : `Rolled the dice and got ${q(t)} (${fine(pr[t])}), which happens to be the likeliest word this time. Try again from the same place to see the others.`)
-      : `Rolled the dice and got ${q(t)} (${fine(pr[t])}), not the likeliest word ${q(top)} (${fine(pr[top])}).`;
+      ? (pr[t] > 0.95 ? `Drew ${q(t)}, which held ${fine(pr[t])} of the tickets. The model was nearly certain, so the draw almost always lands here.` : `Drew ${q(t)}, which held ${fine(pr[t])} of the tickets: the favorite won this time. Remove it and draw again from the same place to see other words win sometimes.`)
+      : `Drew ${q(t)}, which held only ${fine(pr[t])} of the tickets: not the favorite ${q(top)} (${fine(pr[top])}), but it had a chance and won this time.`;
   });
-  bWrite.addEventListener("click", () => { ids = M.generate(W(), ids, 20, "sample", Math.random).seq; draw(); picked.textContent = "Added 20 words, each picked at random according to its probability."; });
+  bWrite.addEventListener("click", () => { ids = M.generate(W(), ids, 20, "sample", Math.random).seq; draw(); picked.textContent = "Added 20 words, each drawn the same weighted way."; });
   bBack.addEventListener("click", () => { ids.pop(); draw(); });
   bClear.addEventListener("click", () => { ids = [I.the]; draw(); });
 
