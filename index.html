@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Equation That Writes Sentences</title>
+<meta name="description" content="A complete language model written as a single equation with 44 numbers, taught step by step from arithmetic up — with a live playground and a closing look at whether giant equations are the best description of AI we'll ever have.">
+<meta property="og:title" content="One Equation That Writes Sentences">
+<meta property="og:description" content="A complete tiny language model, written as one formula and taught from scratch.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a2233'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-style='italic' text-anchor='middle' fill='%2394a9ff'%3EF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<link rel="stylesheet" href="css/site.css">
+<script defer src="vendor/katex/katex.min.js"></script>
+<script defer src="vendor/katex/contrib/auto-render.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+
+<div class="eqbar" id="eqbar" aria-label="The model's equation; each part lights up once you've learned it">
+  <div class="eqbar-inner">
+    <div class="eqbar-eq" id="eqbar-eq"></div>
+    <div class="eqbar-count" id="eqbar-count"></div>
+  </div>
+</div>
+
+<main>
+
+<!-- ============================ HERO ============================ -->
+<section class="hero col" id="top">
+  <h1>One equation that writes sentences</h1>
+  <p class="lede">Below is a complete language model. Not a diagram of one: the whole thing, written as a single formula containing 44 numbers. Give it a few words and it tells you how likely each possible next word is. Run it again and again and it writes.</p>
+
+  <div class="demo" data-widget="hero"></div>
+</section>
+
+<section class="wide">
+  <div class="big-eq" id="hero-eq">
+    <div class="eq-one-line">\[ P(\,\text{next word}\mid x_1,\dots,x_n) \;=\; \smO\!\Big( \big( \xn + \smA\!\big( \xn \WQ\,(\Xm \WK)^{\T} / \rt \big)\, \Xm \WV \big)\, \WO \Big) \]</div>
+    <div class="eq-stacked">
+    \[ \begin{aligned} & P(\,\text{next word}\mid x_1,\dots,x_n) = \\ & \smO\!\Big( \big( \xn \\ & \quad + \smA\!\big( \xn \WQ\,(\Xm \WK)^{\T} / \rt \big) \\ & \quad\;\; \Xm \WV \big)\, \WO \Big) \end{aligned} \]
+    </div>
+  </div>
+  <div data-widget="heroWeights"></div>
+</section>
+
+<section class="col">
+  <p class="hero-note">This page teaches you to read that formula from scratch. You don't need to know what a matrix is, what "attention" means, or how any of the symbols work. We'll build each piece by hand, with the model's real numbers, until you could compute the formula yourself. Then we'll ask a harder question: what if, for the giant models behind real AI systems, a formula like this is the best explanation there is?</p>
+
+  <nav class="toc" aria-label="Chapters">
+    <ol>
+      <li><span class="n">1</span><a href="#fitting">Fitting a model to data</a></li>
+      <li><span class="n">2</span><a href="#symbols">How to read the symbols</a></li>
+      <li><span class="n">3</span><a href="#words">Words become numbers</a></li>
+      <li><span class="n">4</span><a href="#matrices">Multiplying by a matrix</a></li>
+      <li><span class="n">5</span><a href="#dot">The dot product</a></li>
+      <li><span class="n">6</span><a href="#softmax">Softmax</a></li>
+      <li><span class="n">7</span><a href="#attention">Attention</a></li>
+      <li><span class="n">8</span><a href="#predict">Making the prediction</a></li>
+      <li><span class="n">9</span><a href="#equation">The whole equation</a></li>
+      <li><span class="n">10</span><a href="#playground">Run it yourself</a></li>
+      <li><span class="n">11</span><a href="#training">Where the 44 numbers came from</a></li>
+      <li><span class="n">12</span><a href="#scale">From 44 numbers to billions</a></li>
+      <li><span class="n">13</span><a href="#question">Is the equation the best description?</a></li>
+    </ol>
+  </nav>
+</section>
+
+<!-- ============================ 1 FITTING ============================ -->
+<section class="chapter" id="fitting">
+  <div class="col">
+    <header><span class="chnum">1</span><h2>Fitting a model to data</h2></header>
+    <p>Long before neural networks, statisticians spoke of <em>fitting a model to data</em>. It's the same idea that produces a language model, so it's where we start.</p>
+    <p>Suppose a survey records five people's years of education and their yearly income, in thousands of dollars:</p>
+    <table class="compare" style="max-width:24rem">
+      <thead><tr><th>Years of education, \(x\)</th><th>Income, \(y\)</th></tr></thead>
+      <tbody>
+        <tr><td class="num">10</td><td class="num">28</td></tr>
+        <tr><td class="num">12</td><td class="num">34</td></tr>
+        <tr><td class="num">14</td><td class="num">41</td></tr>
+        <tr><td class="num">16</td><td class="num">49</td></tr>
+        <tr><td class="num">18</td><td class="num">54</td></tr>
+      </tbody>
+    </table>
+    <p>You might guess that income rises roughly in a straight line with education:</p>
+    <div class="math-block">\[ y = a + b\,x \]</div>
+    <p>Here \(x\) and \(y\) stand for the two measurements, and \(a\) and \(b\) are numbers we haven't chosen yet. \(a\) sets where the line starts; \(b\) sets how steeply it climbs. Each choice of \(a\) and \(b\) gives a different line, so this formula isn't one model. It's a whole <strong>family</strong> of them: every straight line at once.</p>
+    <p><strong>Fitting</strong> means using the data to pick one member of the family. Try it: move the sliders and watch the squares. Each square's side is the gap between a person's real income and the line's prediction, so its area is that gap squared.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="fit"></div></div>
+  <div class="col">
+    <p>The standard choice, called <strong>least squares</strong>, picks the line that makes the total area of the squares as small as possible. Squaring does two jobs: misses above and below the line both count as positive, and big misses count much more than small ones. In symbols:</p>
+    <div class="math-block">\[ \text{error}(a, b) \;=\; \sum_{i=1}^{5} \big(\, y_i - (a + b\,x_i) \,\big)^2 \]</div>
+    <p>Read it like this: for each person \(i\) from 1 to 5, take their real income \(y_i\), subtract the line's prediction \(a + b\,x_i\), square the result, and the big \(\Sigma\) says add all five up. The best line is \(\hat{y} = -5.7 + 3.35\,x\). The little hat on \(\hat y\) marks it as a prediction rather than a measurement.</p>
+    <p>Keep three things apart, because the whole page depends on the difference:</p>
+    <ul>
+      <li><strong>The data</strong>: the five real observations.</li>
+      <li><strong>The model family</strong>: \(y = a + b\,x\), with \(a\) and \(b\) left open.</li>
+      <li><strong>The fitted model</strong>: \(\hat y = -5.7 + 3.35\,x\), the one line the data chose.</li>
+    </ul>
+    <p>The language model at the top of this page is exactly this kind of thing: a family of formulas with 44 open slots instead of two, and data that chose the 44 numbers. The fitted line has one more property worth noticing now. Its numbers <em>mean</em> something you can say in a sentence: each extra year of school goes with about $3,350 more income. Hold on to the question of whether the language model's numbers do too.</p>
+  </div>
+</section>
+
+<!-- ============================ 2 SYMBOLS ============================ -->
+<section class="chapter" id="symbols">
+  <div class="col">
+    <header><span class="chnum">2</span><h2>How to read the symbols</h2></header>
+    <p>Mathematical notation is a compressed way of writing instructions. You don't need much of it, and each piece is introduced again when it first matters. Here is the whole vocabulary in one place.</p>
+    <table class="symtab">
+      <tbody>
+        <tr><td>\(x,\ a,\ b\)</td><td>A letter standing in for a number that isn't fixed yet, or that changes from case to case.</td></tr>
+        <tr><td>\(x_3\)</td><td>A small number below is a label, not math: "\(x\) number 3". If \(x_1, x_2, x_3\) are the words of a phrase, \(x_3\) is the third word.</td></tr>
+        <tr><td>\(x_n\)</td><td>The last one, whichever that is. \(n\) is the count.</td></tr>
+        <tr><td>\((0.8,\ -2.3)\)</td><td>A <strong>vector</strong>: a list of numbers in a fixed order. Ours have two numbers each, so each one is also a point on a flat plane.</td></tr>
+        <tr><td>\(E,\ W_Q,\ X\)</td><td>Capital letters are <strong>matrices</strong>: tables of numbers. \(E\) has one row per word and two columns.</td></tr>
+        <tr><td>\(x\,W\)</td><td>Writing things side by side means multiply them. For matrices that has a special meaning, explained in chapter 4.</td></tr>
+        <tr><td>\(\textstyle\sum_{j}\)</td><td>"Add up, over every \(j\)."</td></tr>
+        <tr><td>\(e^{z}\)</td><td>The number \(e \approx 2.718\) raised to the power \(z\). Always positive, and it grows very fast as \(z\) grows.</td></tr>
+        <tr><td>\(\sqrt{2}\)</td><td>The square root of 2, about 1.414.</td></tr>
+        <tr><td>\(M^{\top}\)</td><td>"Transpose": flip a table so its rows become columns.</td></tr>
+        <tr><td>\(P(A \mid B)\)</td><td>The probability of \(A\), given that \(B\) is true. Read the bar as "given".</td></tr>
+        <tr><td>\(f(x)\)</td><td>A <strong>function</strong>: a rule that takes \(x\) in and gives something back. The whole model is one function.</td></tr>
+        <tr><td>\(\theta\)</td><td>The Greek letter theta, used for all of a model's adjustable numbers at once.</td></tr>
+      </tbody>
+    </table>
+    <p class="aside">Throughout the page, colored symbols in equations can be hovered (or tapped) to see what they stand for. The equation pinned to the top of the screen fills in with color as you learn each part.</p>
+  </div>
+</section>
+
+<!-- ============================ 3 WORDS ============================ -->
+<section class="chapter" id="words" data-learn="word">
+  <div class="col">
+    <header><span class="chnum c-word">3</span><h2>Words become numbers</h2></header>
+    <p>A computer can't multiply the word "cat". So the first thing the model does is swap each word for a fixed list of numbers. Our model's whole language has eight words:</p>
+    <p class="tiles" data-widget="vocab"></p>
+    <p>The period counts as a word. It's how the model ends a sentence, and it's always written with a space before it, like the others.</p>
+    <p>Each word gets two numbers. Two numbers are exactly what you need to mark a point on a flat plane (across, then up), so every word in the language is a point. These lists are called the words' <strong>embeddings</strong>.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="embed"></div></div>
+  <div class="col">
+    <p>We didn't choose these numbers. Training did (chapter 11 shows how). But look at where it put things. <span class="tile">chases</span> and <span class="tile">sees</span> sit on <em>exactly</em> the same point, \((3.7,\ 2.1)\). Nobody told the model that these two verbs are alike. In the text it learned from, both are always followed by "the" and another animal, so training pushed them to almost the same spot: within a few hundredths of each other, and identical once rounded to one decimal place. <span class="tile">cat</span> and <span class="tile">dog</span> are close together too, far from the verbs. The numbers aren't arbitrary; they already record something about how words behave.</p>
+    <p>Stacked as a table, one row per word, the embeddings form the matrix \(\Ev\):</p>
+    <div class="math-block" data-widget="Etex"></div>
+    <h3>A phrase becomes a table</h3>
+    <p>To feed the model a phrase, look up each word's row and stack them. The phrase "the cat sleeps" becomes a 3-row table we'll call \(\Xm\). Its rows are \(x_1, x_2, x_3\), and the last row, \(\xn\), belongs to the word the model is about to follow.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="phrase"></div></div>
+  <div class="col">
+    <p>The model only ever reads the <strong>last three words</strong>. Older words simply fall out of view. That limit is the model's <em>context window</em>. Real language models have them too, just thousands of words long.</p>
+  </div>
+</section>
+
+<!-- ============================ 4 MATRICES ============================ -->
+<section class="chapter" id="matrices">
+  <div class="col">
+    <header><span class="chnum">4</span><h2>Multiplying by a matrix</h2></header>
+    <p>The model's basic move is to take a word's two numbers and turn them into two <em>new</em> numbers by multiplying by a 2×2 matrix. Here's the rule, in full:</p>
+    <div class="math-block">\[ (x_1,\ x_2)\begin{pmatrix} a & b\\ c & d \end{pmatrix} \;=\; (\,x_1 a + x_2 c,\;\; x_1 b + x_2 d\,) \]</div>
+    <p>Each new number is a weighted blend of the old ones. The first column \((a, c)\) gives the recipe for the first new number: \(a\) parts of \(x_1\) plus \(c\) parts of \(x_2\). The second column is the recipe for the second. That's all matrix multiplication is: going down each column, multiplying pairs and adding.</p>
+    <p>With real numbers: the model has a matrix called \(\WQ\) (chapter 7 explains its job). Multiply <span class="tile">cat</span>'s numbers by it:</p>
+    <div class="math-block">\[ (0.8,\ -2.3)\begin{pmatrix} -2.1 & 0.5\\ -1.5 & 1.4 \end{pmatrix} = \big(\,0.8\times(-2.1) + (-2.3)\times(-1.5),\;\; 0.8\times 0.5 + (-2.3)\times 1.4\,\big) = (1.77,\ -2.82) \]</div>
+    <p>Step through it yourself with any word and any of the model's three 2×2 matrices:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="matmul"></div></div>
+  <div class="col">
+    <h3>What a matrix does to the whole plane</h3>
+    <p>Since every word is a point, multiplying all of them by the same matrix moves every point at once. A matrix can stretch the plane, squash it, rotate it or flip it, but it always keeps straight lines straight and keeps the center fixed. Watch the grid and the eight words move:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="transform"></div></div>
+  <div class="col">
+    <p>Two more facts and you have all the matrix multiplication the model uses:</p>
+    <ul>
+      <li>To multiply a whole table \(\Xm\) by a matrix, multiply each row separately. Three rows in, three rows out.</li>
+      <li>The matrix doesn't have to be square. A vector of 2 numbers times a 2×8 matrix gives 8 numbers, one per column. The model uses exactly this at the end to give every word in the language a score.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ 5 DOT ============================ -->
+<section class="chapter" id="dot">
+  <div class="col">
+    <header><span class="chnum">5</span><h2>The dot product: how much two arrows agree</h2></header>
+    <p>Think of a vector as an arrow from the center of the plane to its point. The <strong>dot product</strong> of two arrows multiplies their matching numbers and adds:</p>
+    <div class="math-block">\[ a \cdot b \;=\; a_1 b_1 + a_2 b_2 \]</div>
+    <p>The result measures agreement. It's large and positive when the arrows point the same way, near zero when they're at right angles, and negative when they point apart. Longer arrows make the number bigger in either direction. Drag the arrow tips:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="dot"></div></div>
+  <div class="col">
+    <p>The dot product is how the model asks two questions. In chapter 7: <em>how relevant is that earlier word to this one?</em> In chapter 8: <em>how well does each possible next word fit?</em> (If you noticed that matrix multiplication was also "multiply pairs and add": yes, each new number in chapter 4 was a dot product of the vector with one column.)</p>
+  </div>
+</section>
+
+<!-- ============================ 6 SOFTMAX ============================ -->
+<section class="chapter" id="softmax">
+  <div class="col">
+    <header><span class="chnum">6</span><h2>Softmax: turning scores into probabilities</h2></header>
+    <p>The model produces scores, and scores can be any numbers at all: \(-64\), \(3\), \(25\). Probabilities have to be between 0 and 1 and add up to 1. <strong>Softmax</strong> converts one into the other in two steps:</p>
+    <ol class="steps">
+      <li>Raise \(e\) to the power of each score. Every result is positive, the order is kept, and gaps get exaggerated: a score 1 higher becomes about 2.7 times bigger.</li>
+      <li>Divide each result by their total, so they add up to 1.</li>
+    </ol>
+    <div class="math-block">\[ \sm(z)_i \;=\; \frac{e^{z_i}}{\sum_j e^{z_j}} \]</div>
+    <p>Read it as: the share for item \(i\) is \(e^{z_i}\) divided by the sum of \(e^{z_j}\) over every item \(j\).</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="softmax"></div></div>
+  <div class="col">
+    <p>Two things to notice by playing with it. Adding the same amount to every score changes nothing, because only the gaps matter. And when one score is ahead by more than about 5, it takes nearly all of the probability. The model's scores are often far apart, which is why many of its predictions come out at 100%.</p>
+  </div>
+</section>
+
+<!-- ============================ 7 ATTENTION ============================ -->
+<section class="chapter" id="attention" data-learn="query key value attn">
+  <div class="col">
+    <header><span class="chnum c-attn">7</span><h2>Attention: letting a word look back</h2></header>
+    <p>Here is the problem attention solves. After "cat chases the" the next word should be <span class="tile">dog</span>. After "dog chases the" it should be <span class="tile">cat</span>. In both cases the last word is "the", so the last word alone can't decide. The model has to look back and see who is doing the chasing.</p>
+    <p><strong>Attention</strong> lets the last word pull in information from the words before it. It takes four moves, each built from the tools in chapters 4 to 6.</p>
+    <ol class="steps">
+      <li><strong>Give every word three new vectors</strong> by multiplying its embedding by three matrices:
+        <span class="c-query">a <strong>query</strong></span> \(\qv = x\,\WQ\), what this word is looking for;
+        <span class="c-key">a <strong>key</strong></span> \(\kv = x\,\WK\), what a word offers to be found by;
+        and <span class="c-value">a <strong>value</strong></span> \(\vv = x\,\WV\), what a word hands over if it's chosen. Only the last word needs a query, because only it is making the prediction.</li>
+      <li><strong>Score each word</strong> with the dot product of the last word's query and that word's key: \(s_j = \qv \cdot \kv_j\). Then divide by \(\rt\). (That's the square root of the vectors' length, 2. Real models divide by it so scores don't grow just because vectors get longer; here it's a small, fixed shrink.)</li>
+      <li><strong>Softmax the scores</strong> into <span class="c-attn">attention weights</span> \(\av_j\) that add up to 1.</li>
+      <li><strong>Blend the values</strong> using those weights: \(\zv = \sum_j \av_j\, \vv_j\). A word with weight 1 hands over its whole value; a word with weight 0 contributes nothing.</li>
+    </ol>
+    <p>The names query, key and value are metaphors. The matrices are just numbers training found. But the metaphor fits what they end up doing, as you can check below with every number shown.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="attention"></div></div>
+  <div class="col">
+    <p>With "cat chases the", about 99.6% of the attention lands on <span class="tile">cat</span>, so the blend is almost exactly cat's value. The last word has found the subject. Switch to "chases the cat" and the word <span class="tile">cat</span> looks back at <span class="tile">chases</span> instead: that's how it knows it's the object and the sentence should end. With ". the cat" it looks at the period and knows a verb comes next.</p>
+    <p>Now try "dog chases the". The attention splits between <span class="tile">dog</span> and <span class="tile">chases</span>, yet the result still leads to <span class="tile">cat</span>. Training found a solution that works, not the tidy one a person might have designed. That gap between "works" and "tidy" comes back in chapter 13.</p>
+    <h3>All of attention as one expression</h3>
+    <p>Write the keys of all the words as rows of a table, \(\Xm\WK\). Flipping it with \({}^{\T}\) turns the keys into columns, so multiplying the query by it computes every score at once (each column gives one dot product). That gives the whole of attention in one line:</p>
+    <div class="math-block">\[ \zv \;=\; \smA\!\Big(\, \xn \WQ\, (\Xm\WK)^{\T} / \rt \,\Big)\; \Xm \WV \]</div>
+    <p>Inside the brackets: query times keys, scaled, are the scores. Softmax turns them into weights. Multiplying the weights by the table of values \(\Xm\WV\) is the blend.</p>
+  </div>
+</section>
+
+<!-- ============================ 8 PREDICT ============================ -->
+<section class="chapter" id="predict" data-learn="res out">
+  <div class="col">
+    <header><span class="chnum c-out">8</span><h2>Making the prediction</h2></header>
+    <p>Attention has produced \(\zv\), two numbers summarizing what the last word found by looking back. Three short steps turn that into a prediction.</p>
+    <ol class="steps">
+      <li><strong>Add the word back in.</strong> \(r = \xn + \zv\). Attention's findings are added on top of what the last word already was, so neither is lost. Real models do this everywhere; it's called a <em>residual connection</em>.</li>
+      <li><strong>Score every word in the language.</strong> Multiply \(r\) by the 2×8 matrix \(\WO\). Each of its eight columns is an arrow belonging to one word, and each score is the dot product of \(r\) with that word's arrow. Whichever word's arrow points most along \(r\) gets the top score.</li>
+      <li><strong>Softmax</strong> the eight scores into eight probabilities.</li>
+    </ol>
+  </div>
+  <div class="wide"><div class="widget" data-widget="output"></div></div>
+  <div class="col">
+    <p>For "cat chases the", \(r\) points almost exactly along <span class="tile">dog</span>'s arrow, so dog wins with a probability above 99.9%. Switch phrases and watch \(r\) swing toward a different word's arrow. After "the cat", \(r\) lands in a region where the four verbs' arrows all score about equally, which is why the model spreads its bets across them.</p>
+  </div>
+</section>
+
+<!-- ============================ 9 EQUATION ============================ -->
+<section class="chapter" id="equation">
+  <div class="col">
+    <header><span class="chnum">9</span><h2>The whole equation</h2></header>
+    <p>Put the pieces together, inside out, and you have the entire model:</p>
+  </div>
+  <div class="wide"><div class="math-block eq-ch9"><div class="eq-one-line">\[ P(\,\text{next word}\mid x_1,\dots,x_n) \;=\; \smO\!\Big( \big( \xn + \smA\!\big( \xn \WQ\,(\Xm \WK)^{\T} / \rt \big)\, \Xm \WV \big)\, \WO \Big) \]</div>
+    <div class="eq-stacked">
+    \[ \begin{aligned} & P(\,\text{next word}\mid x_1,\dots,x_n) = \\ & \smO\!\Big( \big( \xn \\ & \quad + \smA\!\big( \xn \WQ\,(\Xm \WK)^{\T} / \rt \big) \\ & \quad\;\; \Xm \WV \big)\, \WO \Big) \end{aligned} \]
+    </div></div></div>
+  <div class="col">
+    <table class="compare">
+      <thead><tr><th>Piece</th><th>What it does</th><th>Chapter</th></tr></thead>
+      <tbody>
+        <tr><td>\(\Xm,\ \xn\)</td><td>The last three words as rows of numbers, and the final word's row</td><td>3</td></tr>
+        <tr><td>\(\xn\WQ\,(\Xm\WK)^{\T}/\rt\)</td><td>One relevance score per word: query · key, scaled</td><td>5, 7</td></tr>
+        <tr><td>\(\smA(\dots)\)</td><td>Scores become attention weights that add up to 1</td><td>6, 7</td></tr>
+        <tr><td>\(\dots\,\Xm\WV\)</td><td>The weighted blend of the words' values</td><td>7</td></tr>
+        <tr><td>\(\xn + \dots\)</td><td>The last word added back in</td><td>8</td></tr>
+        <tr><td>\((\dots)\WO\)</td><td>A score for each of the 8 words</td><td>4, 8</td></tr>
+        <tr><td>\(\smO(\dots)\)</td><td>Scores become the 8 probabilities</td><td>6, 8</td></tr>
+      </tbody>
+    </table>
+    <p>Now replace every matrix with its numbers. This is not a sketch or an approximation. It is <em>exactly</em> the function the model computes, and every prediction on this page comes from it:</p>
+  </div>
+  <div class="wide"><div class="math-block" data-widget="fullNumeric"></div></div>
+  <div class="col">
+    <p>where \(\Xm\) is built from the rows of \(\Ev\) shown in chapter 3. Count them: 16 numbers in \(\Ev\), 4 each in \(\WQ\), \(\WK\) and \(\WV\), and 16 in \(\WO\). Forty-four numbers in all. That list is the model's \(\theta\).</p>
+    <h3>Without the shorthand</h3>
+    <p>Matrices are an abbreviation. Unpack every one of them into plain multiplications and additions and you get a formula that uses nothing but numbers, \(+\), \(\times\), \(\div\) and exp( ), which means \(e\) raised to the power in the brackets. Below, \(x_{11}\) means "the first number of the first word", \(x_{12}\) "the second number of the first word", and so on. For a three-word input, the probability of a single next word is one line about 11,700 characters long:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="expanded"></div></div>
+  <div class="col">
+    <p>It's long because nothing is reused. Each attention weight is spelled out again everywhere it's needed, and the denominator of the final softmax repeats the whole calculation for all eight words. That is what "one equation" literally means. Keep its length in mind for chapter 12.</p>
+  </div>
+</section>
+
+<!-- ============================ 10 PLAYGROUND ============================ -->
+<section class="chapter" id="playground">
+  <div class="col">
+    <header><span class="chnum">10</span><h2>Run it yourself</h2></header>
+    <p>Type with the word tiles, or let the model write. Every number below is computed live from the equation in chapter 9. Open "Show the calculation" to see each step, and "Edit the 44 numbers" to change the model and see what breaks.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="playground"></div></div>
+  <div class="col">
+    <p>Some things worth trying:</p>
+    <ul>
+      <li>Click <strong>Add the likeliest word</strong> a few times from "the". Always picking the top word makes the model repeat itself ("the dog chases the cat." forever), because nothing changes from one sentence to the next. Picking at random according to the probabilities gives variety. Real chatbots face the same choice.</li>
+      <li>Type nonsense like "dog dog dog" or "sleeps sleeps". The equation still answers, because it's a formula and formulas always produce a number. What its answers <em>mean</em> on inputs it never saw is a question for chapter 13.</li>
+      <li>In the number editor, move <span class="tile">sees</span> away from <span class="tile">chases</span> by changing its embedding. Or change a single number in \(\WQ\) and watch who-chases-whom fall apart.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ 11 TRAINING ============================ -->
+<section class="chapter" id="training">
+  <div class="col">
+    <header><span class="chnum">11</span><h2>Where the 44 numbers came from</h2></header>
+    <p>In chapter 1, data chose two numbers for a line. Here, data chose 44 numbers for a formula. The data is a text written in a made-up language, <em>Tinyspeak</em>, with three rules:</p>
+    <ol class="steps">
+      <li>Every sentence starts with <span class="tile">the</span> and an animal, <span class="tile">cat</span> or <span class="tile">dog</span>, equally often.</li>
+      <li>Then comes an action. Cats are lazy and dogs are busy: a cat sleeps 35% of the time, sees 25%, runs 20% and chases 20%; a dog chases 35%, runs 25%, sees 20% and sleeps 20%.</li>
+      <li><span class="tile">runs</span> and <span class="tile">sleeps</span> end the sentence. <span class="tile">chases</span> and <span class="tile">sees</span> are followed by <span class="tile">the</span> and the <em>other</em> animal, and then the sentence ends.</li>
+    </ol>
+    <p>These rules produced a training text of <span data-fill="nSent">39,845</span> sentences. The model was never shown the rules, only the text. Here's how it starts:</p>
+    <div data-widget="corpus"></div>
+    <h3>Measuring how wrong a model is</h3>
+    <p>For a line, the error was the area of the squares. For a language model, the standard measure is <strong>surprise</strong>. At every position in the text, ask the model how likely it thought the word that actually came next was, and score that as \(-\log P\). A model that gave the right word probability 1 has surprise 0. Probability 0.5 gives 0.69, and 0.01 gives 4.6. The <strong>loss</strong> \(L\) is the average surprise over all <span data-fill="nTokens">179,416</span> predictions in the text.</p>
+    <p>Then training is the same move as least squares, with \(\theta\) standing for all 44 numbers and \(D\) for the data:</p>
+    <div class="math-block">\[ \theta^{*} \;=\; \arg\min_{\theta}\; L(\theta;\, D) \]</div>
+    <p>"\(\arg\min\)" means "the choice of \(\theta\) that makes \(L\) smallest". The star marks the winner.</p>
+    <p>How do you find it without trying every possible list of 44 numbers? Start with random numbers. For each of the 44, ask: if I nudged this number up a tiny bit, would the surprise go up or down? Move every number a small step in the helpful direction. Repeat a few thousand times. (This page computes all 44 answers at once using the chain rule from calculus, a method called backpropagation, but the answer is the same as actually nudging each number.)</p>
+    <p>Notice that the loss can't reach zero. The text itself flips a coin over which animal starts each sentence and rolls dice over the verb, and no model can predict a coin flip. The best possible loss for this text is <span data-fill="floor">0.455</span>.</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="trainer"></div></div>
+  <div class="col">
+    <p>Now try a few different random starts. Most of them never reach the dashed line. A common outcome is a loss of around 0.50 to 0.53: a model that has learned what kind of word comes next but treats "who gets chased" as close to a coin flip. That's the one rule that needs attention to look back at the subject. Other starts stall higher still, with even the grammar half learned. Training finds <em>a</em> set of numbers by walking downhill, and it can settle in a valley that isn't the deepest one. In twelve random starts tried while building this page, exactly one reached the bottom, and the model used throughout this page grew from that same start. (It was trained by literally nudging each number, so if you train start 1 here and compare, a few numbers differ in the first decimal place. Same behavior, slightly different equation.)</p>
+  </div>
+</section>
+
+<!-- ============================ 12 SCALE ============================ -->
+<section class="chapter" id="scale">
+  <div class="col">
+    <header><span class="chnum">12</span><h2>From 44 numbers to billions</h2></header>
+    <p>Real language models are built from the same pieces, multiplied enormously:</p>
+    <table class="compare">
+      <thead><tr><th></th><th>This page</th><th>A large modern model</th></tr></thead>
+      <tbody>
+        <tr><td>Vocabulary</td><td>8 words</td><td>Around 100,000 tokens (words and pieces of words)</td></tr>
+        <tr><td>Numbers per word</td><td>2</td><td>Thousands</td></tr>
+        <tr><td>Context window</td><td>3 words</td><td>Tens of thousands to millions of tokens</td></tr>
+        <tr><td>Attention per layer</td><td>1 head</td><td>Dozens of heads side by side</td></tr>
+        <tr><td>Layers</td><td>1</td><td>Dozens to over a hundred, stacked</td></tr>
+        <tr><td>Other parts</td><td>None</td><td>A small neural network after each attention step, normalization, and information about word order</td></tr>
+        <tr><td>Adjustable numbers \(\theta\)</td><td>44</td><td>Billions to trillions</td></tr>
+      </tbody>
+    </table>
+    <p>Every addition is still made of multiplication, addition, exponentials and a few other ordinary functions. So the summary from chapter 9 holds at any size:</p>
+    <div class="math-block">\[ P(\text{next token} \mid \text{previous tokens}) \;=\; F_{\theta^*}(\text{previous tokens}) \]</div>
+    <p>A real model is one function. In principle you could write it out the way chapter 9 did. In practice: our 44-number model already needs about 11,700 characters for one word's probability. A model with 70 billion numbers, printed at five characters per number, would fill something like 350,000 thick books <em>before writing a single plus sign</em>, and in the fully expanded formula each of those numbers would appear many times over.</p>
+    <p>The other thing that grows is the gap between the formula and our understanding of it. That's the subject of the last chapter.</p>
+  </div>
+</section>
+
+<!-- ============================ 13 QUESTION ============================ -->
+<section class="chapter" id="question">
+  <div class="col">
+    <header><span class="chnum">13</span><h2>Is the equation the best description there is?</h2></header>
+    <p class="sub">We now have the complete equation of a language model. Do we understand it?</p>
+
+    <h3>Two kinds of knowing</h3>
+    <p>There's a difference between having a complete specification of a function and having an intelligible theory of what the function is doing. The equation in chapter 9 is the first kind. It answers every question of the form "what does the model output for <em>this</em> input?" exactly. On its own it doesn't answer questions like: does the model have something like the concept "animal"? Does it follow rules? Why does it handle new cases the way it does? Is there a much shorter description that captures what it does?</p>
+    <p>For our tiny model, we can actually check.</p>
+
+    <h3>Our model has a short theory, on familiar ground</h3>
+    <p>Tinyspeak's three rules predict what should follow every phrase that can occur in the language. There are 31 such phrases of up to three words. Compare the rules with the equation on each one:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="rules"></div></div>
+  <div class="col">
+    <p>They agree everywhere. For this model, on this ground, a few sentences of English describe what 44 numbers do. And we can say more than that by reading the numbers. In the embeddings, chases and sees are identical, so the model treats them as one kind of word. In the attention weights, "the" looks back for the subject, and an animal looks back for a verb or a period to know whether it's the subject or the object. Those are <em>mechanistic</em> explanations, the kind interpretability research tries to find in real models: a story about how the numbers produce the behavior.</p>
+
+    <h3>But the equation answers questions the rules don't</h3>
+    <p>With 8 words and a window of 3, there are 8 + 64 + 512 = 584 possible inputs. Only 31 of them can occur in Tinyspeak. For the other 553, the rules say nothing, because those phrases are impossible in the language. The equation still answers every one:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="strange"></div></div>
+  <div class="col">
+    <p>So which is the real description of what this model does? The three rules are short and intelligible, and they're right on 31 inputs out of 584. The equation is right on all 584 by definition, and nobody would call it intelligible at a glance. The only <em>complete</em> descriptions are the equation itself or a 584-row table of its answers.</p>
+
+    <h3>Even the numbers aren't unique</h3>
+    <p>Here's a stranger fact. Double every number in \(\WQ\) and halve every number in \(\WK\). Every query gets twice as long and every key half as long, so every dot product, and therefore every prediction, stays exactly the same. More generally, you can scramble the two matrices together in infinitely many ways without changing anything the model does:</p>
+  </div>
+  <div class="wide"><div class="widget" data-widget="same"></div></div>
+  <div class="col">
+    <p>So "the" equation of a trained model is really one member of a large family of equations with identical behavior. Whatever understanding the model consists of, it can't be a fact about any particular number taken alone.</p>
+
+    <h3>A ladder of descriptions</h3>
+    <p>Put the options in order from most complete to most intelligible:</p>
+    <table class="ladder">
+      <thead><tr><th>Description</th><th>For this page's model</th><th>For a large model</th></tr></thead>
+      <tbody>
+        <tr><td>Lookup table: every input and its output</td><td>584 rows of 8 probabilities</td><td>Impossible to write: with 100,000 tokens and a long window, the number of possible inputs dwarfs the number of atoms in the universe many times over</td></tr>
+        <tr><td>The equation</td><td>44 numbers</td><td>Billions of numbers. Already a gigantic compression of the table</td></tr>
+        <tr><td>Mechanisms</td><td>A few sentences: "the" looks back for the subject, chases = sees</td><td>Found for some specific behaviors, unknown for most</td></tr>
+        <tr><td>Rules and concepts</td><td>Tinyspeak's three rules</td><td>Unknown, and unknown whether they exist</td></tr>
+      </tbody>
+    </table>
+    <p>Each step down is shorter and easier to understand, and may leave things out. The deep question is about the bottom of the ladder: <strong>could there be a language model for which the giant equation is essentially the best description possible, where no substantially simpler set of higher-level rules captures what it does?</strong></p>
+
+    <h3>Three possible answers</h3>
+    <div class="possibility">
+      <h4>A compact theory exists</h4>
+      <p>Physics has a famous precedent. A container of gas holds around \(10^{23}\) molecules, each moving in its own way, and yet pressure, volume and temperature obey a law you can write on a napkin. The details average out into a few quantities that matter. If language models are like this, interpretability's job is to find their equivalent of temperature: a handful of high-level variables that explain most of the behavior.</p>
+    </div>
+    <div class="possibility">
+      <h4>Many local explanations, no global one</h4>
+      <p>Researchers have found real mechanisms inside real models. One example is "induction heads", attention heads that notice a pattern earlier in the text and continue it (Olsson and colleagues, 2022). Another is a circuit in the small model GPT-2 that works out which name in a sentence should come next in phrases like "When Mary and John went to the store, John gave a drink to…" (Wang and colleagues, 2022). Each explains one slice of behavior. It's an open question whether such slices eventually add up to a theory of the whole model, or whether understanding stays piecemeal: genuine, but local.</p>
+    </div>
+    <div class="possibility">
+      <h4>The equation is essentially the shortest faithful description</h4>
+      <p>A basic result from the theory of information says that most long lists of numbers have no description much shorter than the list itself. There simply aren't enough short descriptions to go around. A trained network isn't a random list. It was fitted to highly structured data, and structure in the data should leave structure in the numbers. But that structure could be spread thinly across many numbers at once (researchers have shown models storing more features than they have dimensions, overlapping them in "superposition"; Elhage and colleagues, 2022). If so, any short set of rules would be a lossy summary: true for typical cases, silent or wrong at the edges, exactly like Tinyspeak's rules on our 553 strange inputs.</p>
+    </div>
+
+    <h3>Why the question is hard to settle</h3>
+    <p>Suppose no one finds a simple theory of a large model. That wouldn't prove there isn't one. The length of the shortest possible description of a thing (its <em>Kolmogorov complexity</em>) is provably uncomputable: there is no general method that can confirm a description is the shortest. And some processes may be <em>computationally irreducible</em>, in Stephen Wolfram's phrase: there's no shortcut to knowing what they'll do other than running them step by step.</p>
+    <p>Biology offers a sobering example. The tiny worm <em>C. elegans</em> has 302 neurons, and its complete wiring diagram was published in 1986. Decades later, scientists are still far from deriving its behavior from that diagram. A complete specification of a system and an explanation of it are different achievements, which is the same gap our 44-number equation already shows on a small scale.</p>
+
+    <h3>What would follow if the equation were the best description?</h3>
+    <ul>
+      <li><strong>Prediction.</strong> To know what the model will do on a genuinely new input, you might have to run it. The formula would be its own shortest explanation.</li>
+      <li><strong>Trust.</strong> Assurances about behavior would have to come from testing, measurement, limits on what the system can do, and monitoring, rather than from reading off a set of rules.</li>
+      <li><strong>Understanding.</strong> Explanation might shift from the fitted function to the process that produced it: the data and the fitting. Biology explains organisms through evolution without deriving each one, and we understand Tinyspeak's model best through Tinyspeak.</li>
+      <li><strong>Partial pictures.</strong> A description can be good enough for one purpose without being complete. The philosopher Daniel Dennett called the patterns that make such descriptions useful "real patterns". The three rules are a real pattern in our model even though they miss 553 cases.</li>
+    </ul>
+
+    <h3>Questions to take with you</h3>
+    <ul class="questions">
+      <li>If two different lists of numbers produce exactly the same behavior, which one is "the" model, and what does understanding it consist of?</li>
+      <li>Is a description that's right on every input you'll ever see an explanation, or just a summary? Does it matter which inputs are left out?</li>
+      <li>As models grow, does a short theory become harder to find, or does it stop existing? Could we tell the difference?</li>
+      <li>Would we recognize the right high-level description if we found it, or might it use concepts we don't yet have?</li>
+    </ul>
+    <p>In chapter 1, the fitted line had two numbers and each meant something you could say in words. Our language model has 44 numbers, and with effort we could still read meaning from them. With billions, the open question is whether meaning lives in the numbers at a level we can read, or only in the whole.</p>
+  </div>
+</section>
+
+<!-- ============================ READING ============================ -->
+<section class="chapter" id="reading">
+  <div class="col">
+    <header><h2>Further reading</h2></header>
+    <ul class="refs">
+      <li>Vaswani et al. (2017), <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>. The paper that introduced the transformer, the architecture of this page's model and of modern language models.</li>
+      <li>Jay Alammar, <a href="https://jalammar.github.io/illustrated-transformer/">The Illustrated Transformer</a>. A visual walk through a full-sized transformer.</li>
+      <li>3Blue1Brown, <a href="https://www.3blue1brown.com/topics/neural-networks">Neural networks</a>. Animated lessons, including chapters on transformers and attention.</li>
+      <li>Elhage et al. (2021), <a href="https://transformer-circuits.pub/2021/framework/index.html">A Mathematical Framework for Transformer Circuits</a>. Reading small attention-only transformers as equations, much as this page does.</li>
+      <li>Olsson et al. (2022), <a href="https://arxiv.org/abs/2209.11895">In-context Learning and Induction Heads</a>.</li>
+      <li>Wang et al. (2022), <a href="https://arxiv.org/abs/2211.00593">Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small</a>.</li>
+      <li>Elhage et al. (2022), <a href="https://arxiv.org/abs/2209.10652">Toy Models of Superposition</a>.</li>
+      <li>Daniel C. Dennett (1991), "Real Patterns", <em>The Journal of Philosophy</em> 88(1): 27–51.</li>
+      <li>Ming Li and Paul Vitányi, <em>An Introduction to Kolmogorov Complexity and Its Applications</em> (Springer). The standard text on shortest descriptions.</li>
+      <li>Stephen Wolfram (2002), <em>A New Kind of Science</em>, on computational irreducibility.</li>
+      <li>White, Southgate, Thomson and Brenner (1986), "The structure of the nervous system of the nematode <em>Caenorhabditis elegans</em>", <em>Philosophical Transactions of the Royal Society B</em> 314: 1–340.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <div class="col">
+    <p>Every number on this page is computed in your browser from the 44-number model in <a href="js/model.js">js/model.js</a>. Source: <a href="https://github.com/PrototypeVersions/LearnedEquation_X">github.com/PrototypeVersions/LearnedEquation_X</a>.</p>
+  </div>
+</footer>
+
+<div class="tip" id="tip" role="tooltip"></div>
+</body>
+</html>
