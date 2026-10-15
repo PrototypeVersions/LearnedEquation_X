@@ -476,6 +476,21 @@
     <div class="math-block">\[ P(\text{next token} \mid \text{previous tokens}) \;=\; F_{\theta^*}(\text{previous tokens}) \]</div>
     <p>Read \(F_{\theta^*}\) as "the function \(F\), with the trained numbers \(\theta^*\) plugged in".</p>
     <p>A real model is one function. In principle you could write it out the way chapter 9 did. In practice: our 44-number model already needs about 12,000 characters for one word's probability. A model with 70 billion numbers, printed at five characters per number, would fill something like 350,000 thick books <em>before writing a single plus sign</em>, and in the fully expanded formula each of those numbers would appear many times over.</p>
+    <h3>From next-word predictor to assistant</h3>
+    <p>Everything on this page trains a model to do one thing: continue text the way its training text would. For a large model this first stage, called <strong>pretraining</strong>, uses an enormous amount of text: web pages, books, code. The result is a remarkable autocomplete, but not yet an assistant. Ask it a question and it may answer, or it may just as happily add three more questions, because that's how such text often goes on.</p>
+    <p>Chatbots such as Claude get a second stage, <strong>post-training</strong>, which starts from the pretrained numbers and keeps adjusting them. Two kinds matter most:</p>
+    <ul>
+      <li><strong>Learning from examples.</strong> The model is trained on example conversations in which an assistant answers well, using the same surprise score as chapter 11, now measured on the assistant's replies.</li>
+      <li><strong>Learning from feedback</strong> (reinforcement learning). The model writes answers, and the answers are scored: by people choosing the better of two, by another model judging them against written principles, or automatically, as when a piece of code either passes its tests or doesn't. Then the numbers are nudged so that higher-scoring answers become more likely. Anthropic, which makes Claude, has published one version of this, Constitutional AI, in which much of the feedback comes from a model applying a written list of principles.</li>
+    </ul>
+    <p>None of this changes the formula. Post-training changes only the numbers, so the finished assistant is still one function \(F_{\theta^*}\) giving probabilities for the next token. What changes is which continuations those probabilities favor.</p>
+    <p>A chat is the same next-token loop as the playground in chapter 10. Behind the scenes the whole conversation, including any instructions the model was given, is laid out as one long piece of text, with special tokens marking who is speaking. The model continues it one token at a time until it produces a token meaning "end of reply". It remembers nothing between conversations unless that information is put back into the text.</p>
+    <ul>
+      <li><strong>Thinking.</strong> Some models write out their working as tokens before giving an answer. It's the same equation, run for more tokens. Training, often reinforcement learning on problems whose answers can be checked, teaches the model to make that working useful.</li>
+      <li><strong>Tools.</strong> To search the web or run code, the model writes a specially formatted request. Ordinary software outside the model carries it out and pastes the result back into the text, and the model continues from there.</li>
+      <li><strong>Pictures.</strong> In a common design, an image is cut into small patches and each patch becomes a list of numbers, much as each word did in chapter 3. From there the model treats them like tokens.</li>
+    </ul>
+    <p>Companies don't publish every detail. Anthropic, for example, doesn't publish Claude's size or exact design, so the table above describes large models in general rather than any particular one. But the ingredients are the ones on this page and in this chapter.</p>
     <p>The other thing that grows is the gap between the formula and our understanding of it. That's the subject of the last chapter.</p>
   </div>
 </section>
@@ -569,6 +584,8 @@
       <li>Vaswani et al. (2017), <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>. The paper that introduced the transformer, the architecture of this page's model and of modern language models.</li>
       <li>Jay Alammar, <a href="https://jalammar.github.io/illustrated-transformer/">The Illustrated Transformer</a>. A visual walk through a full-sized transformer.</li>
       <li>3Blue1Brown, <a href="https://www.3blue1brown.com/topics/neural-networks">Neural networks</a>. Animated lessons, including chapters on transformers and attention.</li>
+      <li>Ouyang et al. (2022), <a href="https://arxiv.org/abs/2203.02155">Training language models to follow instructions with human feedback</a>. How a pretrained model is turned into an assistant with example answers and human feedback.</li>
+      <li>Bai et al. (2022), <a href="https://arxiv.org/abs/2212.08073">Constitutional AI: Harmlessness from AI Feedback</a>. Anthropic's method of training with feedback from a model that applies written principles.</li>
       <li>Elhage et al. (2021), <a href="https://transformer-circuits.pub/2021/framework/index.html">A Mathematical Framework for Transformer Circuits</a>. Reading small attention-only transformers as equations, much as this page does.</li>
       <li>Olsson et al. (2022), <a href="https://arxiv.org/abs/2209.11895">In-context Learning and Induction Heads</a>.</li>
       <li>Wang et al. (2022), <a href="https://arxiv.org/abs/2211.00593">Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small</a>.</li>

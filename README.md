@@ -22,7 +22,7 @@ Created by [Blake A. Myers](https://sites.google.com/view/blake-a-myers/home).
 10. A playground: type any words, generate sentences, edit the numbers
 11. Training live in the browser, from random numbers
 12. How training works, step by step: walking downhill on the line, one real training step with every slope, backpropagation as "predicted minus actual" passed backwards, plain steps vs. Adam
-13. From 44 numbers to billions
+13. From 44 numbers to billions, and from next-word predictor to assistant
 14. Is the equation the best description? Rules vs. equation, the 553 inputs the rules never mention, equations with identical behavior, and three possible answers
 
 ## The model
