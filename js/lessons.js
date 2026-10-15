@@ -28,7 +28,7 @@ export function hero(root) {
 
   const p = M.forward(W, prompt).probs;
   const top = M.argmax(p);
-  line.append(...prompt.map((t) => VOCAB[t] + " "), h("span", { class: "blank" }, VOCAB[top]));
+  line.append(...prompt.map((t) => VOCAB[t] + " "), h("span", { class: "blank", "data-sym": "heroPred" }, VOCAB[top]));
   meta.textContent = `The equation gives “${VOCAB[top]}” a probability of ${pct(p[top])}. Every other word gets almost nothing.`;
 
   let seq = [];

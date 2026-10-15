@@ -31,6 +31,7 @@ const SYM = {
   a: ["a", "Attention weights: how much the last word listens to each word. They add up to 1."],
   z: ["z", "The blend of values that attention hands back."],
   res: ["+", "Adds the last word's own numbers back in, so attention's findings sit on top of what the word already was (a residual connection)."],
+  heroPred: ["The prediction", "The word the equation below rates most likely to come next. Green marks the output part of the model."],
   r: ["r", "The last word's numbers plus what attention found (r = x<sub>n</sub> + z). The output step scores every word against it."],
   score: ["Scores", "One score per word: the dot product of r with that word's arrow (its column of W<sub>O</sub>). Softmax turns the scores into probabilities."],
   WOarrow: ["A word's arrow", "This word's column of W<sub>O</sub>, drawn as an arrow. The word's score is the dot product of r with this arrow."],
