@@ -1,4 +1,4 @@
-# Finally, see exactly how AI works
+# Finally, understand exactly how AI works
 
 *One equation that writes sentences, and how to read it.*
 
