@@ -32,7 +32,7 @@ export function descent(root) {
   const read = h("div");
   root.append(
     h("p", { class: "w-title" }, "Every possible line, as a map"),
-    h("p", { class: "w-help" }, "Darker means lower error. Click anywhere on the map to start from that line, then take steps."),
+    h("p", { class: "w-help" }, "Each ring joins lines with the same error, like contour lines on a hiking map; the numbers on the rings are that error. Click anywhere on the map to start from that line, then take steps."),
     h("div", { class: "w-grid two" },
       h("div", {}, svg, h("div", { class: "slider", style: { marginTop: "10px" } }, h("span", { class: "w-label" }, "Step size"), slider, lrOut), h("div", { class: "w-row" }, b1, b10, bReset)),
       h("div", {}, mini, read)));
@@ -48,6 +48,11 @@ export function descent(root) {
       g.append(s("ellipse", { cx: X(BEST.c), cy: Y(BEST.b), rx: X(BEST.c + rx) - X(BEST.c), ry: Y(BEST.b) - Y(BEST.b + ry), fill: c.word, "fill-opacity": 0.075, stroke: c.word, "stroke-opacity": 0.28 }));
     }
     svg.append(g);
+    // label some rings with their error, where they cross the horizontal line through the center
+    for (const L of [20, 100, 400, 1200]) {
+      const rx = Math.sqrt((L - 1.9) / 5);
+      svg.append(s("text", { x: X(BEST.c + rx) + 3, y: Y(BEST.b) - 4, class: "ticklabel", fill: c.ink2 }, L.toLocaleString()));
+    }
     for (let v = 20; v <= 60; v += 10) svg.append(s("text", { x: X(v), y: Ht - pb + 16, "text-anchor": "middle", class: "ticklabel" }, v));
     for (let v = 0; v <= 8; v += 2) svg.append(s("text", { x: pl - 6, y: Y(v) + 4, "text-anchor": "end", class: "ticklabel" }, v));
     svg.append(s("text", { x: (pl + Wd - pr) / 2, y: Ht - 4, "text-anchor": "middle", class: "ticklabel" }, "c: income the line predicts at 14 years"));

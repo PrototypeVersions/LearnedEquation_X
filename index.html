@@ -349,7 +349,7 @@
 
     <h3>Walking downhill on a line</h3>
     <p>In chapter 1, "Find the best line" jumped straight to the answer. It could, because for straight lines there's a formula that gives the best \(a\) and \(b\) directly. For almost every other model, including every language model, no such formula exists. The best numbers have to be searched for.</p>
-    <p>To make the search easy to picture, label each line by two numbers that can be drawn as a map: its slope \(b\), and \(c\), the income it predicts for someone with 14 years of education, the middle of the data. These are the same lines as before, just labeled differently (\(a = c - 14b\)). Every point on the map below is one possible line, shaded by its total squared error. The best line sits at the bottom of the bowl, marked with a green circle.</p>
+    <p>To make the search easy to picture, label each line by two numbers that can be drawn as a map: its slope \(b\), and \(c\), the income it predicts for someone with 14 years of education, the middle of the data. These are the same lines as before, just labeled differently (\(a = c - 14b\)). Every point on the map below is one possible line. The rings work like contour lines on a hiking map: each ring joins lines with the same total squared error (the number on it), and the error drops ring by ring toward the center. The best line sits at the bottom of that bowl, marked with a green circle.</p>
   </div>
   <div class="wide"><div class="widget" data-widget="descent"></div></div>
   <div class="col">
