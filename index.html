@@ -36,6 +36,10 @@
   <div class="demo" data-widget="hero"></div>
 </section>
 
+<section class="col">
+  <p class="hero-intro"><strong>The model.</strong> Here is the whole thing, as one formula. Don't try to read it yet; by the end of the page every symbol will make sense. In plain words, it says: turn the last few words into numbers, let the last word look back at the others for clues, give each of the eight possible next words a score, and turn those scores into probabilities.</p>
+</section>
+
 <section class="wide">
   <div class="big-eq" id="hero-eq">
     <div class="eq-one-line">\[ P(\,\text{next word}\mid x_1,\dots,x_n) \;=\; \smO\!\Big( \big( \xn + \smA\!\big( \xn \WQ\,(\Xm \WK)^{\T} / \rt \big)\, \Xm \WV \big)\, \WO \Big) \]</div>
@@ -43,11 +47,18 @@
     \[ \begin{aligned} & P(\,\text{next word}\mid x_1,\dots,x_n) = \\ & \smO\!\Big( \big( \xn \\ & \quad + \smA\!\big( \xn \WQ\,(\Xm \WK)^{\T} / \rt \big) \\ & \quad\;\; \Xm \WV \big)\, \WO \Big) \end{aligned} \]
     </div>
   </div>
+</section>
+
+<section class="col">
+  <p class="hero-intro"><strong>Its 44 numbers.</strong> These are the model's parameters: the only thing that makes it this particular model rather than another one with the same formula. Nobody chose them by hand. They were learned from example text (chapter 11). You don't need to know what each one does yet.</p>
+</section>
+
+<section class="wide">
   <div data-widget="heroWeights"></div>
 </section>
 
 <section class="col">
-  <p class="hero-note">This page teaches you to read that formula from scratch. You don't need to know what a matrix is, what "attention" means, or how any of the symbols work. We'll build each piece by hand, with the model's real numbers, until you could compute the formula yourself. Then we'll ask a harder question: what if, for the giant models behind real AI systems, a formula like this is the best explanation there is?</p>
+  <p class="hero-note">This page teaches you to read that formula from scratch, starting from nothing more than arithmetic. We'll build each piece by hand, with the model's real numbers, until you could compute the formula yourself. Then we'll ask a harder question: what if, for the giant models behind real AI systems, a formula like this is the best explanation there is?</p>
 
   <nav class="toc" aria-label="Chapters">
     <ol>

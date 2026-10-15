@@ -69,7 +69,7 @@ export function heroWeights(root) {
     fig(matHTML(W.WV, { cls: "c-value", sym: "WV" }), "W<sub>V</sub>: values"),
     fig(matHTML(W.WO, { colLabels: VOCAB, cls: "c-out", sym: "WO" }), "W<sub>O</sub>: one column per word"),
   );
-  root.append(h("p", { class: "w-label", style: { fontFamily: "var(--font-ui)", margin: "0 0 4px" } }, "The 44 numbers that make it this particular model:"), row);
+  root.append(row);
 }
 
 export function vocab(root) {

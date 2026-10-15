@@ -469,3 +469,5 @@ span[data-sym]:not(.katex *), th[data-sym], td[data-sym], h5[data-sym] { text-de
 .chnum[data-sym] { text-decoration: none; cursor: help; }
 svg text[data-sym] { cursor: help; }
 p span[data-sym], li span[data-sym] { white-space: nowrap; }
+.hero-intro { margin: 30px 0 0; }
+.hero-intro + .hero-intro { margin-top: 12px; }
